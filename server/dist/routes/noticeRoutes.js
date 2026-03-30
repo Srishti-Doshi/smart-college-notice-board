@@ -1,0 +1,13 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = require("express");
+const noticeController_1 = require("../controllers/noticeController");
+const auth_1 = require("../middleware/auth");
+const upload_1 = require("../middleware/upload");
+const router = (0, express_1.Router)();
+router.get("/", noticeController_1.getActiveNotices);
+router.get("/archive", noticeController_1.getArchivedNotices);
+router.post("/", (0, auth_1.requireRole)("admin", "hod"), upload_1.uploadNoticeAttachment.single("attachment"), noticeController_1.createNotice);
+router.put("/:id", (0, auth_1.requireRole)("admin", "hod"), upload_1.uploadNoticeAttachment.single("attachment"), noticeController_1.updateNotice);
+router.delete("/:id", (0, auth_1.requireRole)("admin", "hod"), noticeController_1.deleteNotice);
+exports.default = router;
