@@ -27,7 +27,7 @@ const login = async (req, res) => {
         }
         const token = (0, authToken_1.createAuthToken)(user._id.toString(), user.role);
         res.cookie((0, authToken_1.getAuthCookieName)(), token, (0, authToken_1.getAuthCookieOptions)());
-        return res.json({ user: toSafeUser(user) });
+        return res.json({ user: toSafeUser(user), token });
     }
     catch (error) {
         return res.status(500).json({
@@ -37,11 +37,7 @@ const login = async (req, res) => {
 };
 exports.login = login;
 const logout = (_req, res) => {
-    res.clearCookie((0, authToken_1.getAuthCookieName)(), {
-        httpOnly: true,
-        sameSite: "lax",
-        secure: process.env.NODE_ENV === "production",
-    });
+    res.clearCookie((0, authToken_1.getAuthCookieName)(), (0, authToken_1.getAuthClearCookieOptions)());
     return res.status(204).send();
 };
 exports.logout = logout;

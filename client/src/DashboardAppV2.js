@@ -10,9 +10,30 @@ import NoticeDetailsModal from './components/NoticeDetailsModal';
 const API_BASE_URL =
   process.env.REACT_APP_API_BASE_URL || 'https://smart-college-notice-board-1.onrender.com';
 const SUBSCRIPTION_STORAGE_KEY = 'smart-notice-subscribed-categories';
+const AUTH_TOKEN_STORAGE_KEY = 'smart-notice-auth-token';
 const ONE_WEEK_MS = 7 * 24 * 60 * 60 * 1000;
 
 axios.defaults.withCredentials = true;
+
+const getStoredAuthToken = () => window.localStorage.getItem(AUTH_TOKEN_STORAGE_KEY);
+const storeAuthToken = (token) => {
+  if (token) {
+    window.localStorage.setItem(AUTH_TOKEN_STORAGE_KEY, token);
+  } else {
+    window.localStorage.removeItem(AUTH_TOKEN_STORAGE_KEY);
+  }
+};
+
+axios.interceptors.request.use((config) => {
+  const token = getStoredAuthToken();
+
+  if (token) {
+    config.headers = config.headers || {};
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+
+  return config;
+});
 
 const defaultFilters = {
   search: '',
@@ -134,7 +155,10 @@ function DashboardAppV2() {
       try {
         const response = await axios.get(`${API_BASE_URL}/api/auth/me`);
         setCurrentUser(response.data.user);
-      } catch (_error) {
+      } catch (error) {
+        if (error?.response?.status === 401) {
+          storeAuthToken(null);
+        }
         setCurrentUser(null);
       }
     };
@@ -518,10 +542,12 @@ function DashboardAppV2() {
         email,
         password,
       });
+      storeAuthToken(response.data.token);
       setCurrentUser(response.data.user);
       setShowLogin(false);
       setAuthError('');
     } catch (error) {
+      storeAuthToken(null);
       setAuthError(error.response?.data?.error || 'Could not login. Please try again.');
     } finally {
       setAuthSubmitting(false);
@@ -534,6 +560,7 @@ function DashboardAppV2() {
     } catch (_error) {
       // Ignore logout network edge cases.
     } finally {
+      storeAuthToken(null);
       setCurrentUser(null);
       setMode('student');
       setEditingNotice(null);

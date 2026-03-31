@@ -20,9 +20,19 @@ const parseCookies = (cookieHeader) => {
         return acc;
     }, {});
 };
+const parseBearerToken = (authorizationHeader) => {
+    if (!authorizationHeader) {
+        return null;
+    }
+    const [scheme, token] = authorizationHeader.trim().split(/\s+/, 2);
+    if (!scheme || !token || scheme.toLowerCase() !== "bearer") {
+        return null;
+    }
+    return token;
+};
 const attachAuthUser = (req, _res, next) => {
     const cookieMap = parseCookies(req.headers.cookie);
-    const authToken = cookieMap[(0, authToken_1.getAuthCookieName)()];
+    const authToken = cookieMap[(0, authToken_1.getAuthCookieName)()] || parseBearerToken(req.headers.authorization);
     if (!authToken) {
         return next();
     }

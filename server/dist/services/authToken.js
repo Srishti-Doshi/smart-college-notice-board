@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getAuthCookieOptions = exports.getAuthCookieName = exports.verifyAuthToken = exports.createAuthToken = void 0;
+exports.getAuthClearCookieOptions = exports.getAuthCookieOptions = exports.getAuthCookieName = exports.verifyAuthToken = exports.createAuthToken = void 0;
 const node_crypto_1 = require("node:crypto");
 const AUTH_COOKIE_NAME = "smart_notice_auth";
 const ONE_DAY_MS = 24 * 60 * 60 * 1000;
@@ -56,10 +56,19 @@ const verifyAuthToken = (token) => {
 exports.verifyAuthToken = verifyAuthToken;
 const getAuthCookieName = () => AUTH_COOKIE_NAME;
 exports.getAuthCookieName = getAuthCookieName;
+const isProduction = () => process.env.NODE_ENV === "production";
 const getAuthCookieOptions = () => ({
     httpOnly: true,
-    sameSite: "lax",
-    secure: process.env.NODE_ENV === "production",
+    // Cross-origin deployed clients need SameSite=None, while local HTTP dev
+    // still needs a non-secure cookie that browsers will accept.
+    sameSite: (isProduction() ? "none" : "lax"),
+    secure: isProduction(),
     maxAge: TOKEN_TTL_MS,
 });
 exports.getAuthCookieOptions = getAuthCookieOptions;
+const getAuthClearCookieOptions = () => ({
+    httpOnly: true,
+    sameSite: (isProduction() ? "none" : "lax"),
+    secure: isProduction(),
+});
+exports.getAuthClearCookieOptions = getAuthClearCookieOptions;

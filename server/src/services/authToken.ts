@@ -73,9 +73,20 @@ export const verifyAuthToken = (token: string) => {
 };
 
 export const getAuthCookieName = () => AUTH_COOKIE_NAME;
+
+const isProduction = () => process.env.NODE_ENV === "production";
+
 export const getAuthCookieOptions = () => ({
   httpOnly: true,
-  sameSite: "lax" as const,
-  secure: process.env.NODE_ENV === "production",
+  // Cross-origin deployed clients need SameSite=None, while local HTTP dev
+  // still needs a non-secure cookie that browsers will accept.
+  sameSite: (isProduction() ? "none" : "lax") as "none" | "lax",
+  secure: isProduction(),
   maxAge: TOKEN_TTL_MS,
+});
+
+export const getAuthClearCookieOptions = () => ({
+  httpOnly: true,
+  sameSite: (isProduction() ? "none" : "lax") as "none" | "lax",
+  secure: isProduction(),
 });

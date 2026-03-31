@@ -2,6 +2,7 @@ import { type Request, type Response } from "express";
 import { User } from "../models/User";
 import {
   createAuthToken,
+  getAuthClearCookieOptions,
   getAuthCookieName,
   getAuthCookieOptions,
 } from "../services/authToken";
@@ -54,7 +55,7 @@ export const login = async (req: LoginRequest, res: Response) => {
     const token = createAuthToken(user._id.toString(), user.role as UserRole);
     res.cookie(getAuthCookieName(), token, getAuthCookieOptions());
 
-    return res.json({ user: toSafeUser(user) });
+    return res.json({ user: toSafeUser(user), token });
   } catch (error) {
     return res.status(500).json({
       error: error instanceof Error ? error.message : "Failed to login.",
@@ -63,11 +64,7 @@ export const login = async (req: LoginRequest, res: Response) => {
 };
 
 export const logout = (_req: Request, res: Response) => {
-  res.clearCookie(getAuthCookieName(), {
-    httpOnly: true,
-    sameSite: "lax",
-    secure: process.env.NODE_ENV === "production",
-  });
+  res.clearCookie(getAuthCookieName(), getAuthClearCookieOptions());
   return res.status(204).send();
 };
 

@@ -30,13 +30,28 @@ const parseCookies = (cookieHeader?: string) => {
   }, {});
 };
 
+const parseBearerToken = (authorizationHeader?: string) => {
+  if (!authorizationHeader) {
+    return null;
+  }
+
+  const [scheme, token] = authorizationHeader.trim().split(/\s+/, 2);
+
+  if (!scheme || !token || scheme.toLowerCase() !== "bearer") {
+    return null;
+  }
+
+  return token;
+};
+
 export const attachAuthUser = (
   req: AuthenticatedRequest,
   _res: Response,
   next: NextFunction
 ) => {
   const cookieMap = parseCookies(req.headers.cookie);
-  const authToken = cookieMap[getAuthCookieName()];
+  const authToken =
+    cookieMap[getAuthCookieName()] || parseBearerToken(req.headers.authorization);
 
   if (!authToken) {
     return next();
