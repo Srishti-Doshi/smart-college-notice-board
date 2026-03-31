@@ -14,7 +14,7 @@ const defaultFormState = {
   expiresAt: '',
   isPinned: false,
   pinnedRank: '1',
-  createdBy: 'Admin',
+  createdBy: 'Academic Office',
 };
 
 function AdminNoticeForm({
@@ -122,7 +122,7 @@ function AdminNoticeForm({
           <input
             className="rounded-2xl border border-slate-200 bg-white px-4 py-3 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
             name="title"
-            placeholder="Enter notice title"
+            placeholder="Example: End-Semester Examination Timetable for UG Programs"
             value={formData.title}
             onChange={handleChange}
           />
@@ -133,7 +133,7 @@ function AdminNoticeForm({
           <textarea
             className="rounded-2xl border border-slate-200 bg-white px-4 py-3 min-h-[140px] outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
             name="description"
-            placeholder="Write the notice details"
+            placeholder="Example: The Controller of Examinations has released the final schedule. Students should verify subject codes, hall allotments, and reporting time before Friday."
             value={formData.description}
             onChange={handleChange}
           />
@@ -176,7 +176,7 @@ function AdminNoticeForm({
           <input
             className="rounded-2xl border border-slate-200 bg-white px-4 py-3 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
             name="department"
-            placeholder="All / CSE / MBA"
+            placeholder="Example: All / CSE / ECE / MBA"
             value={formData.department}
             onChange={handleChange}
           />
@@ -198,7 +198,7 @@ function AdminNoticeForm({
           <input
             className="rounded-2xl border border-slate-200 bg-white px-4 py-3 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
             name="attachmentUrl"
-            placeholder="https://example.com/file.pdf"
+            placeholder="Example: https://college.edu/circulars/end-sem-timetable.pdf"
             value={formData.attachmentUrl}
             onChange={handleChange}
           />
@@ -223,7 +223,7 @@ function AdminNoticeForm({
           <input
             className="rounded-2xl border border-slate-200 bg-white px-4 py-3 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
             name="createdBy"
-            placeholder="Admin name"
+            placeholder="Example: Examination Cell / Placement Office"
             value={formData.createdBy}
             onChange={handleChange}
           />
