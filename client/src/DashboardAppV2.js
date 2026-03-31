@@ -108,6 +108,7 @@ function DashboardAppV2() {
   const [highlightPinned, setHighlightPinned] = useState(false);
   const [notificationsEnabled, setNotificationsEnabled] = useState(false);
   const [lastAlertAt, setLastAlertAt] = useState(null);
+  const [lastAlertNotice, setLastAlertNotice] = useState(null);
   const [alertsThisWeek, setAlertsThisWeek] = useState([]);
   const [notificationPermission, setNotificationPermission] = useState(
     typeof Notification === 'undefined' ? 'unsupported' : Notification.permission
@@ -238,8 +239,17 @@ function DashboardAppV2() {
     );
   }, [notices.length]);
 
-  const recordAlertSent = () => {
+  const recordAlertSent = (notice) => {
     setLastAlertAt(new Date().toISOString());
+    setLastAlertNotice(
+      notice
+        ? {
+            id: notice._id,
+            title: notice.title,
+            category: notice.category,
+          }
+        : null
+    );
     setAlertsThisWeek((currentAlerts) => [Date.now(), ...currentAlerts]);
   };
 
@@ -274,7 +284,7 @@ function DashboardAppV2() {
             new Notification(`New ${notice.category} notice`, {
               body: `${notice.title} (${notice.urgency || 'Medium'})`,
             });
-            recordAlertSent();
+            recordAlertSent(notice);
           });
         }
 
@@ -482,6 +492,49 @@ function DashboardAppV2() {
     setSubmitMessage('Notifications disabled.');
   };
 
+  const handleTestNotification = () => {
+    if (typeof Notification === 'undefined') {
+      setSubmitMessage('This browser does not support notifications.');
+      return;
+    }
+
+    if (notificationPermission !== 'granted') {
+      setSubmitMessage('Allow notifications first, then try the test alert again.');
+      return;
+    }
+
+    const previewCategory = subscribedCategories[0] || 'General';
+    const previewNotice = {
+      _id: 'test-alert',
+      title: `${previewCategory} alert preview`,
+      category: previewCategory,
+    };
+
+    new Notification(`New ${previewCategory} notice`, {
+      body: 'This is how category alerts will appear on your device.',
+    });
+    recordAlertSent(previewNotice);
+    setSubmitMessage('Test alert sent.');
+  };
+
+  const handleFocusCategory = (category) => {
+    setMode('student');
+    setFeedView('active');
+    setFilters((currentFilters) => ({
+      ...currentFilters,
+      category,
+    }));
+    scrollToRef(feedSectionRef);
+  };
+
+  const handleOpenLastAlert = () => {
+    if (!lastAlertNotice?.category) {
+      return;
+    }
+
+    handleFocusCategory(lastAlertNotice.category);
+  };
+
   const handleOpenCreateNotice = () => {
     setEditingNotice(null);
     setIsNoticeFormOpen(true);
@@ -671,7 +724,11 @@ function DashboardAppV2() {
               onEnableNotifications={handleEnableNotifications}
               onDisableNotifications={handleDisableNotifications}
               lastAlertAt={lastAlertAt}
+              lastAlertNotice={lastAlertNotice}
               alertsThisWeekCount={recentAlertsCount}
+              onCategoryChipClick={handleFocusCategory}
+              onOpenLastAlert={handleOpenLastAlert}
+              onSendTestAlert={handleTestNotification}
             />
           </div>
         )}

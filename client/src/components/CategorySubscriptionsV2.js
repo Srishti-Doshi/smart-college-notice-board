@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo, useState } from 'react';
 
 const CATEGORY_OPTIONS = ['Academic', 'Placement', 'Events', 'General'];
 
@@ -15,6 +15,13 @@ const formatLastAlert = (lastAlertAt) => {
   })}`;
 };
 
+const actionLabelByStatus = {
+  live: 'Pause Alerts',
+  paused: 'Turn On Alerts',
+  blocked: 'Turn On Alerts',
+  unsupported: 'Unavailable',
+};
+
 function CategorySubscriptionsV2({
   subscribedCategories,
   notificationStatus,
@@ -24,8 +31,13 @@ function CategorySubscriptionsV2({
   onEnableNotifications,
   onDisableNotifications,
   lastAlertAt,
+  lastAlertNotice,
   alertsThisWeekCount,
+  onCategoryChipClick,
+  onOpenLastAlert,
+  onSendTestAlert,
 }) {
+  const [showHelp, setShowHelp] = useState(false);
   const statusStyles =
     notificationStatus === 'live'
       ? 'bg-emerald-400/20 text-emerald-200 border-emerald-300/50'
@@ -38,11 +50,59 @@ function CategorySubscriptionsV2({
       ? 'Live'
       : notificationStatus === 'paused'
         ? 'Disabled'
-      : notificationStatus === 'blocked'
-        ? 'Blocked'
+        : notificationStatus === 'blocked'
+        ? 'Permission blocked'
         : 'Unsupported';
 
-  const canEnable = subscribedCategories.length > 0;
+  const statusHelperText =
+    notificationStatus === 'live'
+      ? 'Alerts are active for the categories you selected.'
+      : notificationStatus === 'blocked'
+        ? 'This device or browser has notifications turned off for this site. On phones, open the site in your browser settings and allow notifications.'
+        : notificationStatus === 'unsupported'
+          ? 'This browser does not support web notifications on this device.'
+          : subscribedCategories.length > 0
+            ? 'Select categories below and enable notifications when you are ready.'
+            : 'Choose at least one category to enable notifications.';
+
+  const primaryActionLabel = actionLabelByStatus[notificationStatus];
+  const primaryActionDisabled =
+    notificationStatus === 'unsupported' ||
+    (notificationStatus !== 'live' && subscribedCategories.length === 0);
+
+  const liveSummaryText = useMemo(() => {
+    if (subscribedCategories.length === 0) {
+      return 'Choose at least one category to start getting alerts.';
+    }
+
+    if (notificationStatus === 'live') {
+      return `Alerts are active for ${subscribedCategories.join(', ')}.`;
+    }
+
+    if (notificationStatus === 'blocked') {
+      return 'Notifications are blocked on this device. Open browser settings to allow them.';
+    }
+
+    return `You are subscribed to ${subscribedCategories.join(', ')}.`;
+  }, [notificationStatus, subscribedCategories]);
+
+  const lastAlertText = lastAlertNotice?.title
+    ? `Last alert: ${lastAlertNotice.title}, ${formatLastAlert(lastAlertAt).replace('Last alert ', '')}`
+    : formatLastAlert(lastAlertAt);
+
+  const weeklyAlertText =
+    alertsThisWeekCount === 1
+      ? 'You received 1 alert this week.'
+      : `You received ${alertsThisWeekCount} alerts this week.`;
+
+  const handlePrimaryAction = () => {
+    if (notificationStatus === 'live') {
+      onDisableNotifications();
+      return;
+    }
+
+    onEnableNotifications();
+  };
 
   return (
     <section className="rounded-[30px] bg-slate-950 text-white shadow-[0_20px_50px_rgba(15,23,42,0.2)] p-6 mb-8 overflow-hidden relative">
@@ -69,32 +129,78 @@ function CategorySubscriptionsV2({
               <button
                 type="button"
                 className="rounded-xl bg-white/10 px-3 py-2 text-xs font-semibold text-white border border-white/15 transition hover:bg-white/16 disabled:opacity-50"
-                onClick={onEnableNotifications}
-                disabled={!canEnable}
+                onClick={handlePrimaryAction}
+                disabled={primaryActionDisabled}
               >
-                {notificationsEnabled ? 'Enabled' : 'Enable'}
-              </button>
-              <button
-                type="button"
-                className="rounded-xl bg-white/5 px-3 py-2 text-xs font-semibold text-slate-200 border border-white/15 transition hover:bg-white/12 disabled:opacity-50"
-                onClick={onDisableNotifications}
-                disabled={!notificationsEnabled}
-              >
-                Disable
+                {primaryActionLabel}
               </button>
             </div>
           </div>
 
           <p className="mt-3 text-sm font-semibold text-white">
-            Watching {watchingCount} categories
+            You&apos;ll get alerts for {watchingCount} {watchingCount === 1 ? 'category' : 'categories'}
           </p>
-          <p className="mt-1 text-xs text-slate-300">
-            {subscribedCategories.length > 0
-              ? 'Select categories below to control what you receive.'
-              : 'Choose at least one category to enable notifications.'}
-          </p>
-          <p className="mt-1 text-xs text-slate-300">{formatLastAlert(lastAlertAt)}</p>
-          <p className="mt-1 text-xs text-slate-300">{alertsThisWeekCount} alerts this week</p>
+          <p className="mt-1 text-xs text-slate-300">{liveSummaryText}</p>
+          <p className="mt-1 text-xs text-slate-300">{statusHelperText}</p>
+
+          {subscribedCategories.length > 0 ? (
+            <div className="mt-3 flex flex-wrap gap-2">
+              {subscribedCategories.map((category) => (
+                <button
+                  key={category}
+                  type="button"
+                  className="rounded-full border border-amber-300/35 bg-amber-300/12 px-3 py-1 text-xs font-semibold text-amber-100 transition hover:bg-amber-300/20"
+                  onClick={() => onCategoryChipClick(category)}
+                >
+                  {category}
+                </button>
+              ))}
+            </div>
+          ) : (
+            <p className="mt-3 text-xs text-slate-300">
+              No categories selected yet. Pick one below to start receiving relevant alerts.
+            </p>
+          )}
+
+          <button
+            type="button"
+            className="mt-3 text-left text-xs font-semibold text-blue-200 underline underline-offset-4"
+            onClick={() => setShowHelp((currentValue) => !currentValue)}
+          >
+            Why am I not getting alerts?
+          </button>
+
+          {showHelp && (
+            <div className="mt-2 rounded-2xl border border-white/10 bg-white/5 px-3 py-3 text-xs text-slate-300">
+              Notifications can stay silent if browser permission is blocked, no categories are selected, or alerts are currently paused.
+            </div>
+          )}
+
+          <div className="mt-4 rounded-2xl border border-white/10 bg-white/5 px-3 py-3">
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-300">
+              Notification Health
+            </p>
+            <button
+              type="button"
+              className="mt-2 text-left text-sm font-semibold text-white underline-offset-4 hover:underline disabled:no-underline disabled:opacity-70"
+              onClick={onOpenLastAlert}
+              disabled={!lastAlertNotice?.category}
+            >
+              {lastAlertText}
+            </button>
+            <p className="mt-1 text-xs text-slate-300">{weeklyAlertText}</p>
+          </div>
+
+          <div className="mt-3 flex flex-wrap gap-2">
+            <button
+              type="button"
+              className="rounded-xl bg-white/5 px-3 py-2 text-xs font-semibold text-slate-200 border border-white/15 transition hover:bg-white/12 disabled:opacity-50"
+              onClick={onSendTestAlert}
+              disabled={notificationStatus === 'unsupported'}
+            >
+              Send Test Alert
+            </button>
+          </div>
         </div>
       </div>
 
