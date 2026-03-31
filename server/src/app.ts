@@ -1,6 +1,7 @@
 import "dotenv/config";
 import cors from "cors";
 import express from "express";
+import path from "node:path";
 import { attachAuthUser } from "./middleware/auth";
 import authRoutes from "./routes/authRoutes";
 import noticeRoutes from "./routes/noticeRoutes";
@@ -23,5 +24,20 @@ app.get("/", (_req, res) => {
 
 app.use("/api/auth", authRoutes);
 app.use("/api/notices", noticeRoutes);
+
+const clientBuildPath = path.resolve(__dirname, "../../client/build");
+
+if (process.env.NODE_ENV === "production") {
+  app.use(express.static(clientBuildPath));
+
+  app.get("*", (req, res, next) => {
+    if (req.path.startsWith("/api/")) {
+      next();
+      return;
+    }
+
+    res.sendFile(path.join(clientBuildPath, "index.html"));
+  });
+}
 
 export default app;

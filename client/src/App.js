@@ -7,7 +7,8 @@ import DashboardTabs from './components/DashboardTabs';
 import FeedFilters from './components/FeedFilters';
 import NoticeCard from './components/NoticeCard';
 
-const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000';
+const API_BASE_URL =
+  process.env.REACT_APP_API_BASE_URL || (process.env.NODE_ENV === 'production' ? '' : 'http://localhost:5000');
 const SUBSCRIPTION_STORAGE_KEY = 'smart-notice-subscribed-categories';
 
 const defaultFilters = {
