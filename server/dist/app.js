@@ -11,9 +11,20 @@ const auth_1 = require("./middleware/auth");
 const authRoutes_1 = __importDefault(require("./routes/authRoutes"));
 const noticeRoutes_1 = __importDefault(require("./routes/noticeRoutes"));
 const app = (0, express_1.default)();
-const clientOrigin = process.env.CLIENT_ORIGIN || "http://localhost:3000";
+const allowedOrigins = (process.env.CORS_ORIGINS ||
+    process.env.CLIENT_ORIGIN ||
+    "http://localhost:3000,https://smart-college-notice-board-first.onrender.com")
+    .split(",")
+    .map((origin) => origin.trim())
+    .filter(Boolean);
 app.use((0, cors_1.default)({
-    origin: clientOrigin,
+    origin: (origin, callback) => {
+        if (!origin || allowedOrigins.includes(origin)) {
+            callback(null, true);
+            return;
+        }
+        callback(new Error(`CORS blocked for origin: ${origin}`));
+    },
     credentials: true,
 }));
 app.use(express_1.default.json());

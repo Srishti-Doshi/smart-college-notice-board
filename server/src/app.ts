@@ -7,11 +7,25 @@ import authRoutes from "./routes/authRoutes";
 import noticeRoutes from "./routes/noticeRoutes";
 
 const app = express();
-const clientOrigin = process.env.CLIENT_ORIGIN || "http://localhost:3000";
+const allowedOrigins = (
+  process.env.CORS_ORIGINS ||
+  process.env.CLIENT_ORIGIN ||
+  "http://localhost:3000,https://smart-college-notice-board-first.onrender.com"
+)
+  .split(",")
+  .map((origin) => origin.trim())
+  .filter(Boolean);
 
 app.use(
   cors({
-    origin: clientOrigin,
+    origin: (origin, callback) => {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+        return;
+      }
+
+      callback(new Error(`CORS blocked for origin: ${origin}`));
+    },
     credentials: true,
   })
 );
