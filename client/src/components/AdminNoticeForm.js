@@ -24,6 +24,7 @@ function AdminNoticeForm({
   submitLabel = 'Create Notice',
   title = 'Create a Notice',
   descriptionText = 'Start with the essential fields. We will add attachments and more advanced features in the next steps.',
+  isModal = false,
 }) {
   const computedInitialState = useMemo(
     () => ({
@@ -98,18 +99,26 @@ function AdminNoticeForm({
   };
 
   return (
-    <section className="rounded-[30px] bg-white/88 shadow-[0_18px_45px_rgba(15,23,42,0.08)] border border-white/70 p-6 backdrop-blur">
+    <section
+      className={`rounded-[30px] shadow-[0_18px_45px_rgba(15,23,42,0.08)] p-6 text-slate-900 ${
+        isModal
+          ? 'bg-white/72 border border-white/70 backdrop-blur-2xl'
+          : 'bg-white/88 border border-white/70 backdrop-blur'
+      }`}
+    >
       <div className="mb-6">
-        <p className="text-xs font-semibold uppercase tracking-[0.28em] text-blue-700">
+        <p className="text-xs font-bold uppercase tracking-[0.28em] text-blue-800">
           Admin Panel
         </p>
-        <h3 className="text-3xl font-black text-slate-900 mt-2">{title}</h3>
-        <p className="text-sm text-slate-500 mt-2">{descriptionText}</p>
+        <h3 className="text-3xl font-extrabold text-slate-950 mt-2">{title}</h3>
+        <p className={`text-sm mt-2 ${isModal ? 'font-medium text-slate-800' : 'text-slate-500'}`}>
+          {descriptionText}
+        </p>
       </div>
 
       <form className="grid grid-cols-1 md:grid-cols-2 gap-5" onSubmit={handleSubmit}>
         <label className="flex flex-col gap-2 md:col-span-2">
-          <span className="text-sm font-medium text-slate-700">Title</span>
+          <span className="text-sm font-semibold text-slate-900">Title</span>
           <input
             className="rounded-2xl border border-slate-200 bg-white px-4 py-3 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
             name="title"
@@ -120,7 +129,7 @@ function AdminNoticeForm({
         </label>
 
         <label className="flex flex-col gap-2 md:col-span-2">
-          <span className="text-sm font-medium text-slate-700">Description</span>
+          <span className="text-sm font-semibold text-slate-900">Description</span>
           <textarea
             className="rounded-2xl border border-slate-200 bg-white px-4 py-3 min-h-[140px] outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
             name="description"
@@ -131,7 +140,7 @@ function AdminNoticeForm({
         </label>
 
         <label className="flex flex-col gap-2">
-          <span className="text-sm font-medium text-slate-700">Category</span>
+          <span className="text-sm font-semibold text-slate-900">Category</span>
           <select
             className="rounded-2xl border border-slate-200 bg-white px-4 py-3 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
             name="category"
@@ -147,7 +156,7 @@ function AdminNoticeForm({
         </label>
 
         <label className="flex flex-col gap-2">
-          <span className="text-sm font-medium text-slate-700">Urgency</span>
+          <span className="text-sm font-semibold text-slate-900">Urgency</span>
           <select
             className="rounded-2xl border border-slate-200 bg-white px-4 py-3 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
             name="urgency"
@@ -163,7 +172,7 @@ function AdminNoticeForm({
         </label>
 
         <label className="flex flex-col gap-2">
-          <span className="text-sm font-medium text-slate-700">Department</span>
+          <span className="text-sm font-semibold text-slate-900">Department</span>
           <input
             className="rounded-2xl border border-slate-200 bg-white px-4 py-3 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
             name="department"
@@ -174,7 +183,7 @@ function AdminNoticeForm({
         </label>
 
         <label className="flex flex-col gap-2">
-          <span className="text-sm font-medium text-slate-700">Expires At</span>
+          <span className="text-sm font-semibold text-slate-900">Expires At</span>
           <input
             className="rounded-2xl border border-slate-200 bg-white px-4 py-3 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
             type="datetime-local"
@@ -185,7 +194,7 @@ function AdminNoticeForm({
         </label>
 
         <label className="flex flex-col gap-2">
-          <span className="text-sm font-medium text-slate-700">Attachment URL</span>
+          <span className="text-sm font-semibold text-slate-900">Attachment URL</span>
           <input
             className="rounded-2xl border border-slate-200 bg-white px-4 py-3 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
             name="attachmentUrl"
@@ -196,7 +205,7 @@ function AdminNoticeForm({
         </label>
 
         <label className="flex flex-col gap-2">
-          <span className="text-sm font-medium text-slate-700">Upload Document</span>
+          <span className="text-sm font-semibold text-slate-900">Upload Document</span>
           <input
             className="rounded-2xl border border-slate-200 bg-white px-4 py-3 outline-none transition file:mr-4 file:rounded-xl file:border-0 file:bg-slate-100 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-slate-700"
             type="file"
@@ -204,13 +213,13 @@ function AdminNoticeForm({
             accept=".pdf,.doc,.docx,.png,.jpg,.jpeg"
             onChange={handleChange}
           />
-          <span className="text-xs text-slate-500">
+          <span className={`text-xs ${isModal ? 'text-slate-600' : 'text-slate-500'}`}>
             Upload PDF, DOC, DOCX, PNG, or JPG up to 5 MB.
           </span>
         </label>
 
         <label className="flex flex-col gap-2">
-          <span className="text-sm font-medium text-slate-700">Created By</span>
+          <span className="text-sm font-semibold text-slate-900">Created By</span>
           <input
             className="rounded-2xl border border-slate-200 bg-white px-4 py-3 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
             name="createdBy"
@@ -221,7 +230,7 @@ function AdminNoticeForm({
         </label>
 
         <div className="flex flex-col gap-3">
-          <label className="inline-flex items-center gap-3 text-sm font-medium text-slate-700">
+          <label className="inline-flex items-center gap-3 text-sm font-semibold text-slate-900">
             <input
               className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
               type="checkbox"
@@ -234,7 +243,7 @@ function AdminNoticeForm({
 
           {formData.isPinned && (
             <label className="flex flex-col gap-2">
-              <span className="text-sm font-medium text-slate-700">Pinned Rank</span>
+              <span className="text-sm font-semibold text-slate-900">Pinned Rank</span>
               <select
                 className="rounded-2xl border border-slate-200 bg-white px-4 py-3 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
                 name="pinnedRank"

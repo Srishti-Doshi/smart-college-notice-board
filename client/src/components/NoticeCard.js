@@ -39,25 +39,29 @@ const NoticeCard = ({ notice, actions, showArchiveBadge = false, onOpenNotice })
         {noticeDescription}
       </p>
 
-      {shouldShowReadMore && onOpenNotice && (
-        <button
-          type="button"
-          className="mt-4 inline-flex text-sm font-semibold text-slate-900 underline decoration-slate-300 underline-offset-4 hover:text-blue-700"
-          onClick={() => onOpenNotice(notice)}
-        >
-          Read full notice
-        </button>
-      )}
+      {(shouldShowReadMore || notice.attachmentUrl) && (
+        <div className="mt-4 flex flex-wrap items-center gap-4">
+          {shouldShowReadMore && onOpenNotice && (
+            <button
+              type="button"
+              className="inline-flex text-sm font-semibold text-slate-900 underline decoration-slate-300 underline-offset-4 hover:text-blue-700"
+              onClick={() => onOpenNotice(notice)}
+            >
+              Read full notice
+            </button>
+          )}
 
-      {notice.attachmentUrl && (
-        <a
-          className="inline-flex mt-5 text-sm font-semibold text-blue-700 hover:text-blue-800"
-          href={notice.attachmentUrl}
-          target="_blank"
-          rel="noreferrer"
-        >
-          Open attachment
-        </a>
+          {notice.attachmentUrl && (
+            <a
+              className="inline-flex text-sm font-semibold text-blue-700 hover:text-blue-800"
+              href={notice.attachmentUrl}
+              target="_blank"
+              rel="noreferrer"
+            >
+              Open attachment
+            </a>
+          )}
+        </div>
       )}
 
       {actions && actions.length > 0 && (

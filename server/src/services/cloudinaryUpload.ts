@@ -8,6 +8,18 @@ export type UploadedAttachment = {
 const toDataUri = (buffer: Buffer, mimeType: string) =>
   `data:${mimeType};base64,${buffer.toString("base64")}`;
 
+const buildUniquePublicId = (originalName: string) => {
+  const baseName = originalName
+    .replace(/\.[^/.]+$/, "")
+    .replace(/[^a-zA-Z0-9-_]+/g, "-")
+    .replace(/-+/g, "-")
+    .replace(/^-|-$/g, "")
+    .toLowerCase();
+
+  const randomSuffix = Math.random().toString(36).slice(2, 8);
+  return `${baseName || "notice-attachment"}-${Date.now()}-${randomSuffix}`;
+};
+
 export const uploadBufferToCloudinary = async (
   file: Express.Multer.File
 ): Promise<UploadedAttachment> => {
@@ -22,7 +34,7 @@ export const uploadBufferToCloudinary = async (
     {
       folder: "smart-notice-board",
       resource_type: "auto",
-      public_id: file.originalname.replace(/\.[^/.]+$/, "").replace(/\s+/g, "-"),
+      public_id: buildUniquePublicId(file.originalname),
       overwrite: false,
     }
   );

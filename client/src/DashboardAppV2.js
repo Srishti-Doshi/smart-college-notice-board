@@ -13,26 +13,12 @@ const ONE_WEEK_MS = 7 * 24 * 60 * 60 * 1000;
 
 axios.defaults.withCredentials = true;
 
-const shouldNotifyByLevel = (notice, alertLevel) => {
-  if (alertLevel === 'all') {
-    return true;
-  }
-  if (alertLevel === 'high') {
-    return notice.urgency === 'High' || notice.urgency === 'Urgent';
-  }
-  return notice.urgency === 'Urgent';
-};
-
-const isInQuietHours = () => {
-  const hour = new Date().getHours();
-  return hour >= 22 || hour < 7;
-};
-
 const defaultFilters = {
   search: '',
   category: 'All',
   urgency: 'All',
   department: 'All',
+  noticeDate: '',
 };
 
 const sortNotices = (notices) =>
@@ -53,6 +39,9 @@ const buildParams = (filters) => ({
   ...(filters.category !== 'All' ? { category: filters.category } : {}),
   ...(filters.urgency !== 'All' ? { urgency: filters.urgency } : {}),
   ...(filters.department !== 'All' ? { department: filters.department } : {}),
+  ...(filters.noticeDate
+    ? { date: filters.noticeDate, tzOffset: String(new Date().getTimezoneOffset()) }
+    : {}),
 });
 
 const statCards = (notices, pinnedNotices, subscribedCategories) => [
@@ -88,14 +77,14 @@ function DashboardAppV2() {
   const [loading, setLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [editingNotice, setEditingNotice] = useState(null);
+  const [isNoticeFormOpen, setIsNoticeFormOpen] = useState(false);
   const [selectedNotice, setSelectedNotice] = useState(null);
   const [mode, setMode] = useState('student');
   const [feedView, setFeedView] = useState('active');
   const [filters, setFilters] = useState(defaultFilters);
   const [submitMessage, setSubmitMessage] = useState('');
   const [highlightPinned, setHighlightPinned] = useState(false);
-  const [alertLevel, setAlertLevel] = useState('high');
-  const [quietHoursEnabled, setQuietHoursEnabled] = useState(true);
+  const [notificationsEnabled, setNotificationsEnabled] = useState(false);
   const [lastAlertAt, setLastAlertAt] = useState(null);
   const [alertsThisWeek, setAlertsThisWeek] = useState([]);
   const [notificationPermission, setNotificationPermission] = useState(
@@ -126,11 +115,18 @@ function DashboardAppV2() {
     if (notificationPermission === 'denied') {
       return 'blocked';
     }
-    if (notificationPermission === 'granted') {
+    if (
+      notificationPermission === 'granted' &&
+      notificationsEnabled &&
+      subscribedCategories.length > 0
+    ) {
       return 'live';
     }
-    return 'unsupported';
-  }, [notificationPermission]);
+    if (notificationPermission === 'unsupported') {
+      return 'unsupported';
+    }
+    return 'paused';
+  }, [notificationPermission, notificationsEnabled, subscribedCategories.length]);
 
   useEffect(() => {
     const loadSessionUser = async () => {
@@ -153,6 +149,18 @@ function DashboardAppV2() {
     },
     []
   );
+
+  useEffect(() => {
+    if (!submitMessage) {
+      return undefined;
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      setSubmitMessage('');
+    }, 2600);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [submitMessage]);
 
   const fetchNotices = useCallback(async () => {
     try {
@@ -180,11 +188,24 @@ function DashboardAppV2() {
   }, [canManageNotices, mode]);
 
   useEffect(() => {
+    if (mode !== 'admin') {
+      setIsNoticeFormOpen(false);
+      setEditingNotice(null);
+    }
+  }, [mode]);
+
+  useEffect(() => {
     window.localStorage.setItem(
       SUBSCRIPTION_STORAGE_KEY,
       JSON.stringify(subscribedCategories)
     );
   }, [subscribedCategories]);
+
+  useEffect(() => {
+    if (subscribedCategories.length === 0 && notificationsEnabled) {
+      setNotificationsEnabled(false);
+    }
+  }, [notificationsEnabled, subscribedCategories]);
 
   useEffect(() => {
     setAlertsThisWeek((currentAlerts) =>
@@ -216,17 +237,13 @@ function DashboardAppV2() {
 
         if (
           notificationPermission === 'granted' &&
+          notificationsEnabled &&
           subscribedCategories.length > 0 &&
           newNotices.length > 0
         ) {
           const relevantNotices = newNotices.filter((notice) =>
-            subscribedCategories.includes(notice.category) &&
-            shouldNotifyByLevel(notice, alertLevel)
+            subscribedCategories.includes(notice.category)
           );
-
-          if (quietHoursEnabled && isInQuietHours()) {
-            return;
-          }
 
           relevantNotices.forEach((notice) => {
             new Notification(`New ${notice.category} notice`, {
@@ -246,7 +263,7 @@ function DashboardAppV2() {
     const intervalId = window.setInterval(pollActiveNotices, 30000);
 
     return () => window.clearInterval(intervalId);
-  }, [alertLevel, notificationPermission, quietHoursEnabled, subscribedCategories]);
+  }, [notificationPermission, notificationsEnabled, subscribedCategories]);
 
   const pinnedNotices = useMemo(
     () =>
@@ -297,7 +314,8 @@ function DashboardAppV2() {
       const formData = new FormData();
       Object.entries(payload).forEach(([key, value]) => {
         if (value !== undefined && value !== null) {
-          formData.append(key, value);
+          const formFieldName = key === 'attachmentFile' ? 'attachment' : key;
+          formData.append(formFieldName, value);
         }
       });
 
@@ -309,6 +327,8 @@ function DashboardAppV2() {
       if (feedView === 'active') {
         setNotices((currentNotices) => sortNotices([response.data, ...currentNotices]));
       }
+      setIsNoticeFormOpen(false);
+      setEditingNotice(null);
       setSubmitMessage('Notice created successfully. Check the feed below.');
       return { success: true };
     } catch (error) {
@@ -333,7 +353,8 @@ function DashboardAppV2() {
       const formData = new FormData();
       Object.entries(payload).forEach(([key, value]) => {
         if (value !== undefined && value !== null) {
-          formData.append(key, value);
+          const formFieldName = key === 'attachmentFile' ? 'attachment' : key;
+          formData.append(formFieldName, value);
         }
       });
 
@@ -354,6 +375,7 @@ function DashboardAppV2() {
           )
         )
       );
+      setIsNoticeFormOpen(false);
       setEditingNotice(null);
       setSubmitMessage('Notice updated successfully.');
       return { success: true };
@@ -414,18 +436,35 @@ function DashboardAppV2() {
       return;
     }
 
+    if (subscribedCategories.length === 0) {
+      setSubmitMessage('Select at least one category before enabling notifications.');
+      return;
+    }
+
     const permission = await Notification.requestPermission();
     setNotificationPermission(permission);
 
     if (permission === 'granted') {
-      setSubmitMessage('Browser notifications enabled for subscribed categories.');
+      setNotificationsEnabled(true);
+      setSubmitMessage('Notifications enabled.');
     } else {
       setSubmitMessage('Notification permission was not granted.');
     }
   };
 
-  const handleToggleQuietHours = () => {
-    setQuietHoursEnabled((currentValue) => !currentValue);
+  const handleDisableNotifications = () => {
+    setNotificationsEnabled(false);
+    setSubmitMessage('Notifications disabled.');
+  };
+
+  const handleOpenCreateNotice = () => {
+    setEditingNotice(null);
+    setIsNoticeFormOpen(true);
+  };
+
+  const handleOpenEditNotice = (notice) => {
+    setEditingNotice(notice);
+    setIsNoticeFormOpen(true);
   };
 
   const scrollToRef = (sectionRef) => {
@@ -506,8 +545,12 @@ function DashboardAppV2() {
 
   const emptyMessage =
     feedView === 'archive'
-      ? 'No archived notices match the current filters.'
-      : 'No active notices match the current filters.';
+      ? 'No past notices match the current filters.'
+      : 'No latest notices match the current filters.';
+  const isErrorToast =
+    submitMessage.toLowerCase().includes('could not') ||
+    submitMessage.toLowerCase().includes('not granted') ||
+    submitMessage.toLowerCase().includes('failed');
 
   return (
     <div className="min-h-screen relative overflow-hidden bg-[var(--canvas)] text-slate-900">
@@ -593,15 +636,12 @@ function DashboardAppV2() {
           <div ref={subscriptionsRef}>
             <CategorySubscriptionsV2
               subscribedCategories={subscribedCategories}
-              notificationPermission={notificationPermission}
               notificationStatus={notificationStatus}
               watchingCount={subscribedCategories.length}
+              notificationsEnabled={notificationsEnabled}
               onToggleCategory={handleToggleCategory}
               onEnableNotifications={handleEnableNotifications}
-              alertLevel={alertLevel}
-              onChangeAlertLevel={setAlertLevel}
-              quietHoursEnabled={quietHoursEnabled}
-              onToggleQuietHours={handleToggleQuietHours}
+              onDisableNotifications={handleDisableNotifications}
               lastAlertAt={lastAlertAt}
               alertsThisWeekCount={recentAlertsCount}
             />
@@ -611,6 +651,8 @@ function DashboardAppV2() {
         <FeedFilters
           filters={filters}
           departments={departments}
+          feedView={feedView}
+          onFeedViewChange={setFeedView}
           onFilterChange={handleFilterChange}
           onResetFilters={handleResetFilters}
         />
@@ -629,36 +671,23 @@ function DashboardAppV2() {
         )}
 
         {canManageNotices && mode === 'admin' && (
-          <section className="mb-10">
-            <AdminNoticeForm
-              onSubmitNotice={editingNotice ? handleUpdateNotice : handleCreateNotice}
-              isSubmitting={isSubmitting}
-              initialValues={editingNotice || undefined}
-              submitLabel={editingNotice ? 'Update Notice' : 'Create Notice'}
-              title={editingNotice ? 'Edit Notice' : 'Create a Notice'}
-              descriptionText={
-                editingNotice
-                  ? 'Adjust the selected notice and save changes without losing its pinned or archive state.'
-                  : 'Add a new campus update with stronger context, optional attachment links, and a clear expiry plan.'
-              }
-            />
-
-            {editingNotice && (
-              <button
-                type="button"
-                className="mt-4 rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
-                onClick={() => setEditingNotice(null)}
-              >
-                Cancel Editing
-              </button>
-            )}
+          <section className="mb-6 flex items-center justify-between rounded-2xl border border-slate-200 bg-white/90 px-5 py-4 shadow-sm">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-500">
+                Admin Actions
+              </p>
+              <p className="mt-1 text-sm text-slate-600">
+                Create new campus updates or edit existing notices from the feed.
+              </p>
+            </div>
+            <button
+              type="button"
+              className="rounded-xl bg-slate-950 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-800"
+              onClick={handleOpenCreateNotice}
+            >
+              Create Notice
+            </button>
           </section>
-        )}
-
-        {submitMessage && (
-          <div className="mb-8 rounded-[24px] border border-emerald-200 bg-emerald-50/90 px-5 py-4 text-sm font-medium text-emerald-800 shadow-sm">
-            {submitMessage}
-          </div>
         )}
 
         {loading ? (
@@ -710,10 +739,10 @@ function DashboardAppV2() {
               <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4 mb-5">
                 <div>
                   <p className="text-xs font-semibold uppercase tracking-[0.28em] text-blue-700">
-                    {feedView === 'archive' ? 'Searchable History' : 'Notice Feed'}
+                    {feedView === 'archive' ? 'Past Updates' : 'Latest Updates'}
                   </p>
                   <h3 className="mt-2 text-3xl font-black text-slate-900">
-                    {feedView === 'archive' ? 'Archived Notices' : 'Latest Notices'}
+                    {feedView === 'archive' ? 'Past Notices' : 'Latest Notices'}
                   </h3>
                 </div>
                 <div className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-600 shadow-sm">
@@ -740,7 +769,7 @@ function DashboardAppV2() {
                               {
                                 label: 'Edit',
                                 variant: 'primary',
-                                onClick: () => setEditingNotice(notice),
+                                onClick: () => handleOpenEditNotice(notice),
                               },
                               {
                                 label: feedView === 'archive' ? 'Restore' : 'Archive',
@@ -776,6 +805,20 @@ function DashboardAppV2() {
       </main>
 
       <NoticeDetailsModal notice={selectedNotice} onClose={() => setSelectedNotice(null)} />
+
+      {submitMessage && (
+        <div className="fixed right-6 top-6 z-50">
+          <div
+            className={`rounded-2xl border px-4 py-3 text-sm font-semibold shadow-lg backdrop-blur ${
+              isErrorToast
+                ? 'border-red-200 bg-red-50/95 text-red-700'
+                : 'border-emerald-200 bg-emerald-50/95 text-emerald-700'
+            }`}
+          >
+            {submitMessage}
+          </div>
+        </div>
+      )}
 
       {showLogin && (
         <div className="fixed inset-0 z-40 flex items-center justify-center bg-slate-950/55 px-6">
@@ -845,6 +888,38 @@ function DashboardAppV2() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {canManageNotices && mode === 'admin' && isNoticeFormOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/45 p-4 md:p-6">
+          <div className="w-full max-w-5xl max-h-[92vh] overflow-y-auto rounded-[30px]">
+            <div className="mb-3 flex justify-end">
+              <button
+                type="button"
+                className="rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+                onClick={() => {
+                  setIsNoticeFormOpen(false);
+                  setEditingNotice(null);
+                }}
+              >
+                Close
+              </button>
+            </div>
+            <AdminNoticeForm
+              onSubmitNotice={editingNotice ? handleUpdateNotice : handleCreateNotice}
+              isSubmitting={isSubmitting}
+              isModal
+              initialValues={editingNotice || undefined}
+              submitLabel={editingNotice ? 'Update Notice' : 'Create Notice'}
+              title={editingNotice ? 'Edit Notice' : 'Create a Notice'}
+              descriptionText={
+                editingNotice
+                  ? 'Adjust the selected notice and save changes without losing its pinned or archive state.'
+                  : 'Add a new campus update with stronger context, optional attachment links, and a clear expiry plan.'
+              }
+            />
           </div>
         </div>
       )}

@@ -129,6 +129,11 @@ const buildNoticeQuery = (query, archived) => {
     const category = typeof query.category === "string" ? query.category.trim() : "";
     const urgency = typeof query.urgency === "string" ? query.urgency.trim() : "";
     const department = typeof query.department === "string" ? query.department.trim() : "";
+    const dateFilter = typeof query.date === "string" ? query.date.trim() : "";
+    const timezoneOffsetMinutesRaw = typeof query.tzOffset === "string" ? Number(query.tzOffset) : NaN;
+    const timezoneOffsetMinutes = Number.isNaN(timezoneOffsetMinutesRaw)
+        ? 0
+        : timezoneOffsetMinutesRaw;
     const filters = archived
         ? {
             $or: [{ isArchived: true }, { expiresAt: { $lt: currentTime } }],
@@ -145,6 +150,21 @@ const buildNoticeQuery = (query, archived) => {
     }
     if (department) {
         filters.department = new RegExp(`^${department}$`, "i");
+    }
+    if (dateFilter) {
+        const matchedDate = /^(\d{4})-(\d{2})-(\d{2})$/.exec(dateFilter);
+        if (matchedDate) {
+            const year = Number(matchedDate[1]);
+            const monthIndex = Number(matchedDate[2]) - 1;
+            const day = Number(matchedDate[3]);
+            const localMidnightUtcMs = Date.UTC(year, monthIndex, day, 0, 0, 0, 0) +
+                timezoneOffsetMinutes * 60 * 1000;
+            const nextLocalMidnightUtcMs = localMidnightUtcMs + 24 * 60 * 60 * 1000;
+            filters.createdAt = {
+                $gte: new Date(localMidnightUtcMs),
+                $lt: new Date(nextLocalMidnightUtcMs),
+            };
+        }
     }
     if (search) {
         const existingAndFilters = Array.isArray(filters.$and) ? filters.$and : [];

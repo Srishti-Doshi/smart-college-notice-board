@@ -17,15 +17,12 @@ const formatLastAlert = (lastAlertAt) => {
 
 function CategorySubscriptionsV2({
   subscribedCategories,
-  notificationPermission,
   notificationStatus,
   watchingCount,
+  notificationsEnabled,
   onToggleCategory,
   onEnableNotifications,
-  alertLevel,
-  onChangeAlertLevel,
-  quietHoursEnabled,
-  onToggleQuietHours,
+  onDisableNotifications,
   lastAlertAt,
   alertsThisWeekCount,
 }) {
@@ -39,16 +36,13 @@ function CategorySubscriptionsV2({
   const statusText =
     notificationStatus === 'live'
       ? 'Live'
+      : notificationStatus === 'paused'
+        ? 'Disabled'
       : notificationStatus === 'blocked'
         ? 'Blocked'
         : 'Unsupported';
 
-  const primaryButtonLabel =
-    notificationPermission === 'granted'
-      ? 'Notifications Enabled'
-      : notificationPermission === 'denied'
-        ? 'Enable in Browser'
-        : 'Enable Notifications';
+  const canEnable = subscribedCategories.length > 0;
 
   return (
     <section className="rounded-[30px] bg-slate-950 text-white shadow-[0_20px_50px_rgba(15,23,42,0.2)] p-6 mb-8 overflow-hidden relative">
@@ -71,73 +65,36 @@ function CategorySubscriptionsV2({
             >
               {statusText}
             </span>
-            <button
-              type="button"
-              className="rounded-xl bg-white/10 px-3 py-2 text-xs font-semibold text-white border border-white/15 transition hover:bg-white/16"
-              onClick={onEnableNotifications}
-            >
-              {primaryButtonLabel}
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                className="rounded-xl bg-white/10 px-3 py-2 text-xs font-semibold text-white border border-white/15 transition hover:bg-white/16 disabled:opacity-50"
+                onClick={onEnableNotifications}
+                disabled={!canEnable}
+              >
+                {notificationsEnabled ? 'Enabled' : 'Enable'}
+              </button>
+              <button
+                type="button"
+                className="rounded-xl bg-white/5 px-3 py-2 text-xs font-semibold text-slate-200 border border-white/15 transition hover:bg-white/12 disabled:opacity-50"
+                onClick={onDisableNotifications}
+                disabled={!notificationsEnabled}
+              >
+                Disable
+              </button>
+            </div>
           </div>
 
           <p className="mt-3 text-sm font-semibold text-white">
             Watching {watchingCount} categories
           </p>
           <p className="mt-1 text-xs text-slate-300">
-            Alert level: {alertLevel === 'all' ? 'All notices' : alertLevel === 'high' ? 'High + Urgent' : 'Urgent only'}
-          </p>
-          <p className="mt-1 text-xs text-slate-300">
-            {quietHoursEnabled ? 'Quiet hours: 10 PM to 7 AM' : 'Quiet hours are off'}
+            {subscribedCategories.length > 0
+              ? 'Select categories below to control what you receive.'
+              : 'Choose at least one category to enable notifications.'}
           </p>
           <p className="mt-1 text-xs text-slate-300">{formatLastAlert(lastAlertAt)}</p>
           <p className="mt-1 text-xs text-slate-300">{alertsThisWeekCount} alerts this week</p>
-
-          <div className="mt-4 flex flex-wrap gap-2">
-            <button
-              type="button"
-              className={`rounded-xl border px-3 py-2 text-xs font-semibold transition ${
-                alertLevel === 'all'
-                  ? 'border-blue-300/70 bg-blue-500/20 text-blue-100'
-                  : 'border-white/15 bg-white/5 text-slate-200 hover:bg-white/10'
-              }`}
-              onClick={() => onChangeAlertLevel('all')}
-            >
-              All Notices
-            </button>
-            <button
-              type="button"
-              className={`rounded-xl border px-3 py-2 text-xs font-semibold transition ${
-                alertLevel === 'high'
-                  ? 'border-amber-300/70 bg-amber-500/20 text-amber-100'
-                  : 'border-white/15 bg-white/5 text-slate-200 hover:bg-white/10'
-              }`}
-              onClick={() => onChangeAlertLevel('high')}
-            >
-              High + Urgent
-            </button>
-            <button
-              type="button"
-              className={`rounded-xl border px-3 py-2 text-xs font-semibold transition ${
-                alertLevel === 'urgent'
-                  ? 'border-rose-300/70 bg-rose-500/20 text-rose-100'
-                  : 'border-white/15 bg-white/5 text-slate-200 hover:bg-white/10'
-              }`}
-              onClick={() => onChangeAlertLevel('urgent')}
-            >
-              Urgent Only
-            </button>
-            <button
-              type="button"
-              className={`rounded-xl border px-3 py-2 text-xs font-semibold transition ${
-                quietHoursEnabled
-                  ? 'border-emerald-300/70 bg-emerald-500/20 text-emerald-100'
-                  : 'border-white/15 bg-white/5 text-slate-200 hover:bg-white/10'
-              }`}
-              onClick={onToggleQuietHours}
-            >
-              {quietHoursEnabled ? 'Quiet Hours On' : 'Enable Quiet Hours'}
-            </button>
-          </div>
         </div>
       </div>
 
