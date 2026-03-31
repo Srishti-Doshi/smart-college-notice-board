@@ -105,20 +105,50 @@ function CategorySubscriptionsV2({
   };
 
   return (
-    <section className="rounded-[30px] bg-slate-950 text-white shadow-[0_20px_50px_rgba(15,23,42,0.2)] p-6 mb-8 overflow-hidden relative">
+    <section className="rounded-[30px] bg-slate-950 text-white shadow-[0_20px_50px_rgba(15,23,42,0.2)] p-5 md:p-6 mb-8 overflow-hidden relative">
       <div className="absolute inset-y-0 right-0 w-48 bg-[radial-gradient(circle,_rgba(245,158,11,0.25),_transparent_66%)]" />
-      <div className="relative grid gap-4 lg:grid-cols-[1.5fr_1fr] mb-5">
-        <div className="relative">
+      <div className="relative grid gap-5 lg:grid-cols-[1.15fr_0.85fr] lg:items-start">
+        <div className="relative min-w-0">
           <p className="text-xs font-semibold uppercase tracking-[0.28em] text-blue-200">
             Push Alerts
           </p>
-          <h3 className="text-3xl font-black text-white mt-2">Notification Preferences</h3>
-          <p className="text-sm text-slate-300 mt-2 max-w-2xl">
+          <h3 className="mt-2 text-2xl font-black text-white md:text-3xl">Notification Preferences</h3>
+          <p className="mt-2 max-w-xl text-sm text-slate-300">
             Choose exactly which important updates should interrupt you.
           </p>
+
+          <div className="mt-5 md:mt-6">
+            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-300">
+              Choose Categories
+            </p>
+            <p className="mt-2 text-sm text-slate-300">
+              Pick the notice types you want to hear about first.
+            </p>
+
+            <div className="mt-4 flex flex-wrap gap-3">
+              {CATEGORY_OPTIONS.map((category) => {
+                const isActive = subscribedCategories.includes(category);
+
+                return (
+                  <button
+                    key={category}
+                    type="button"
+                    className={`rounded-full px-4 py-2 text-sm font-semibold border transition ${
+                      isActive
+                        ? 'bg-amber-400 text-slate-950 border-amber-300'
+                        : 'bg-white/5 text-slate-200 border-white/15 hover:bg-white/10'
+                    }`}
+                    onClick={() => onToggleCategory(category)}
+                  >
+                    {isActive ? `Subscribed: ${category}` : `Subscribe: ${category}`}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
         </div>
 
-        <div className="rounded-2xl border border-white/15 bg-white/5 p-4 backdrop-blur-sm">
+        <div className="min-w-0 rounded-2xl border border-white/15 bg-white/5 p-4 backdrop-blur-sm">
           <div className="flex items-center justify-between gap-3">
             <span
               className={`rounded-full border px-3 py-1 text-xs font-bold uppercase tracking-[0.2em] ${statusStyles}`}
@@ -202,27 +232,6 @@ function CategorySubscriptionsV2({
             </button>
           </div>
         </div>
-      </div>
-
-      <div className="relative flex flex-wrap gap-3">
-        {CATEGORY_OPTIONS.map((category) => {
-          const isActive = subscribedCategories.includes(category);
-
-          return (
-            <button
-              key={category}
-              type="button"
-              className={`rounded-full px-4 py-2 text-sm font-semibold border transition ${
-                isActive
-                  ? 'bg-amber-400 text-slate-950 border-amber-300'
-                  : 'bg-white/5 text-slate-200 border-white/15 hover:bg-white/10'
-              }`}
-              onClick={() => onToggleCategory(category)}
-            >
-              {isActive ? `Subscribed: ${category}` : `Subscribe: ${category}`}
-            </button>
-          );
-        })}
       </div>
     </section>
   );
