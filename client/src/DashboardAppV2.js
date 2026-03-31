@@ -8,7 +8,7 @@ import NoticeCard from './components/NoticeCard';
 import NoticeDetailsModal from './components/NoticeDetailsModal';
 
 const API_BASE_URL =
-  process.env.REACT_APP_API_BASE_URL || (process.env.NODE_ENV === 'production' ? '' : 'http://localhost:5000');
+  process.env.REACT_APP_API_BASE_URL || 'https://smart-college-notice-board-1.onrender.com';
 const SUBSCRIPTION_STORAGE_KEY = 'smart-notice-subscribed-categories';
 const ONE_WEEK_MS = 7 * 24 * 60 * 60 * 1000;
 
