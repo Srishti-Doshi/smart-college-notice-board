@@ -30,7 +30,7 @@ const clientBuildPath = path.resolve(__dirname, "../../client/build");
 if (process.env.NODE_ENV === "production") {
   app.use(express.static(clientBuildPath));
 
-  app.get("*", (req, res, next) => {
+  app.get("/{*splat}", (req, res, next) => {
     if (req.path.startsWith("/api/")) {
       next();
       return;

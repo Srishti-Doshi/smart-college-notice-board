@@ -26,7 +26,7 @@ app.use("/api/notices", noticeRoutes_1.default);
 const clientBuildPath = node_path_1.default.resolve(__dirname, "../../client/build");
 if (process.env.NODE_ENV === "production") {
     app.use(express_1.default.static(clientBuildPath));
-    app.get("*", (req, res, next) => {
+    app.get("/{*splat}", (req, res, next) => {
         if (req.path.startsWith("/api/")) {
             next();
             return;
