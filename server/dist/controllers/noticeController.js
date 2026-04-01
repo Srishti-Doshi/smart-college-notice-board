@@ -1,10 +1,11 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.deleteNotice = exports.updateNotice = exports.createNotice = exports.getArchivedNotices = exports.getActiveNotices = void 0;
+const Category_1 = require("../models/Category");
 const Notice_1 = require("../models/Notice");
 const cloudinaryUpload_1 = require("../services/cloudinaryUpload");
 const notice_1 = require("../types/notice");
-const isCategory = (value) => notice_1.NOTICE_CATEGORIES.includes(value);
+const escapeRegex = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 const isUrgency = (value) => notice_1.NOTICE_URGENCIES.includes(value);
 const now = () => new Date();
 const parseDate = (value) => {
@@ -50,10 +51,10 @@ const normalizePayload = (body, options = {}) => {
         normalizedData.description = description;
     }
     if (!isPartial || body.category !== undefined) {
-        if (!body.category || !isCategory(body.category)) {
-            return { error: `Category must be one of: ${notice_1.NOTICE_CATEGORIES.join(", ")}.` };
+        if (!body.category?.trim()) {
+            return { error: "Category is required." };
         }
-        normalizedData.category = body.category;
+        normalizedData.category = body.category.trim();
     }
     if (!isPartial || body.urgency !== undefined) {
         const urgency = body.urgency ?? "Medium";
@@ -101,6 +102,15 @@ const normalizePayload = (body, options = {}) => {
     }
     return { value: normalizedData };
 };
+const validateCategory = async (category) => {
+    if (!category) {
+        return false;
+    }
+    const existingCategory = await Category_1.Category.findOne({
+        name: { $regex: `^${escapeRegex(category)}$`, $options: "i" },
+    });
+    return Boolean(existingCategory);
+};
 const enrichPayloadWithAttachment = (payload, attachment) => {
     if (!attachment) {
         return payload;
@@ -142,7 +152,7 @@ const buildNoticeQuery = (query, archived) => {
             isArchived: false,
             $or: [{ expiresAt: { $exists: false } }, { expiresAt: { $gte: currentTime } }],
         };
-    if (category && isCategory(category)) {
+    if (category) {
         filters.category = category;
     }
     if (urgency && isUrgency(urgency)) {
@@ -214,6 +224,10 @@ const createNotice = async (req, res) => {
         if ("error" in parsed) {
             return res.status(400).json(parsed);
         }
+        const categoryIsValid = await validateCategory(parsed.value.category);
+        if (!categoryIsValid) {
+            return res.status(400).json({ error: "Choose a valid category." });
+        }
         const notice = await Notice_1.Notice.create(parsed.value);
         return res.status(201).json(notice);
     }
@@ -232,6 +246,12 @@ const updateNotice = async (req, res) => {
         });
         if ("error" in parsed) {
             return res.status(400).json(parsed);
+        }
+        if (parsed.value.category) {
+            const categoryIsValid = await validateCategory(String(parsed.value.category));
+            if (!categoryIsValid) {
+                return res.status(400).json({ error: "Choose a valid category." });
+            }
         }
         const updatedNotice = await Notice_1.Notice.findByIdAndUpdate(req.params.id, parsed.value, {
             new: true,

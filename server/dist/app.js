@@ -9,6 +9,7 @@ const express_1 = __importDefault(require("express"));
 const node_path_1 = __importDefault(require("node:path"));
 const auth_1 = require("./middleware/auth");
 const authRoutes_1 = __importDefault(require("./routes/authRoutes"));
+const categoryRoutes_1 = __importDefault(require("./routes/categoryRoutes"));
 const noticeRoutes_1 = __importDefault(require("./routes/noticeRoutes"));
 const app = (0, express_1.default)();
 const allowedOrigins = (process.env.CORS_ORIGINS ||
@@ -33,6 +34,7 @@ app.get("/", (_req, res) => {
     res.send("College Notice Board Server is running.");
 });
 app.use("/api/auth", authRoutes_1.default);
+app.use("/api/categories", categoryRoutes_1.default);
 app.use("/api/notices", noticeRoutes_1.default);
 const clientBuildPath = node_path_1.default.resolve(__dirname, "../../client/build");
 if (process.env.NODE_ENV === "production") {

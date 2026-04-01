@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import axios from 'axios';
+import AdminCategoryForm from './components/AdminCategoryForm';
 import AdminNoticeForm from './components/AdminNoticeForm';
 import CategorySubscriptionsV2 from './components/CategorySubscriptionsV2';
 import DashboardTabs from './components/DashboardTabs';
@@ -96,8 +97,10 @@ function DashboardAppV2() {
   const [authError, setAuthError] = useState('');
   const [showLogin, setShowLogin] = useState(false);
   const [notices, setNotices] = useState([]);
+  const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isCategorySubmitting, setIsCategorySubmitting] = useState(false);
   const [editingNotice, setEditingNotice] = useState(null);
   const [isNoticeFormOpen, setIsNoticeFormOpen] = useState(false);
   const [selectedNotice, setSelectedNotice] = useState(null);
@@ -167,6 +170,20 @@ function DashboardAppV2() {
     loadSessionUser();
   }, []);
 
+  const fetchCategories = useCallback(async () => {
+    try {
+      const response = await axios.get(`${API_BASE_URL}/api/categories`);
+      const nextCategories = Array.isArray(response.data) ? response.data : [];
+      setCategories(nextCategories);
+    } catch (error) {
+      console.error('Error fetching categories:', error);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchCategories();
+  }, [fetchCategories]);
+
   useEffect(
     () => () => {
       if (pinnedHighlightTimerRef.current) {
@@ -226,6 +243,21 @@ function DashboardAppV2() {
       JSON.stringify(subscribedCategories)
     );
   }, [subscribedCategories]);
+
+  useEffect(() => {
+    if (categories.length === 0) {
+      return;
+    }
+
+    setSubscribedCategories((currentCategories) =>
+      currentCategories.filter((category) => categories.includes(category))
+    );
+    setFilters((currentFilters) =>
+      currentFilters.category !== 'All' && !categories.includes(currentFilters.category)
+        ? { ...currentFilters, category: 'All' }
+        : currentFilters
+    );
+  }, [categories]);
 
   useEffect(() => {
     if (subscribedCategories.length === 0 && notificationsEnabled) {
@@ -373,6 +405,38 @@ function DashboardAppV2() {
       };
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const handleCreateCategory = async (categoryName) => {
+    setIsCategorySubmitting(true);
+
+    try {
+      const response = await axios.post(`${API_BASE_URL}/api/categories`, {
+        name: categoryName,
+        createdBy: currentUser?.name || 'Admin',
+      });
+
+      const createdCategoryName = response.data?.name;
+      if (createdCategoryName) {
+        setCategories((currentCategories) =>
+          [...new Set([...currentCategories, createdCategoryName])].sort((first, second) =>
+            first.localeCompare(second)
+          )
+        );
+      } else {
+        await fetchCategories();
+      }
+
+      setSubmitMessage('Category created successfully.');
+      return { success: true };
+    } catch (error) {
+      return {
+        success: false,
+        message: error.response?.data?.error || 'Could not create category.',
+      };
+    } finally {
+      setIsCategorySubmitting(false);
     }
   };
 
@@ -716,6 +780,7 @@ function DashboardAppV2() {
         {mode === 'student' && feedView === 'active' && (
           <div ref={subscriptionsRef}>
             <CategorySubscriptionsV2
+              categories={categories}
               subscribedCategories={subscribedCategories}
               notificationStatus={notificationStatus}
               watchingCount={subscribedCategories.length}
@@ -735,6 +800,7 @@ function DashboardAppV2() {
 
         <FeedFilters
           filters={filters}
+          categories={categories}
           departments={departments}
           feedView={feedView}
           onFeedViewChange={setFeedView}
@@ -756,22 +822,29 @@ function DashboardAppV2() {
         )}
 
         {canManageNotices && mode === 'admin' && (
-          <section className="mb-6 flex items-center justify-between rounded-2xl border border-slate-200 bg-white/90 px-5 py-4 shadow-sm">
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-500">
-                Admin Actions
-              </p>
-              <p className="mt-1 text-sm text-slate-600">
-                Create new campus updates or edit existing notices from the feed.
-              </p>
-            </div>
-            <button
-              type="button"
-              className="rounded-xl bg-slate-950 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-800"
-              onClick={handleOpenCreateNotice}
-            >
-              Create Notice
-            </button>
+          <section className="mb-6 grid gap-4 lg:grid-cols-[1.2fr_0.8fr]">
+            <AdminCategoryForm
+              onCreateCategory={handleCreateCategory}
+              isSubmitting={isCategorySubmitting}
+            />
+            <section className="flex items-center justify-between rounded-2xl border border-slate-200 bg-white/90 px-5 py-4 shadow-sm">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-500">
+                  Admin Actions
+                </p>
+                <p className="mt-1 text-sm text-slate-600">
+                  Create new campus updates or edit existing notices from the feed.
+                </p>
+              </div>
+              <button
+                type="button"
+                className="rounded-xl bg-slate-950 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-800"
+                onClick={handleOpenCreateNotice}
+                disabled={categories.length === 0}
+              >
+                Create Notice
+              </button>
+            </section>
           </section>
         )}
 
@@ -995,6 +1068,7 @@ function DashboardAppV2() {
             <AdminNoticeForm
               onSubmitNotice={editingNotice ? handleUpdateNotice : handleCreateNotice}
               isSubmitting={isSubmitting}
+              categoryOptions={categories}
               isModal
               initialValues={editingNotice || undefined}
               submitLabel={editingNotice ? 'Update Notice' : 'Create Notice'}

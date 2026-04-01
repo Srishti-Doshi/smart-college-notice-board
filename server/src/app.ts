@@ -4,6 +4,7 @@ import express from "express";
 import path from "node:path";
 import { attachAuthUser } from "./middleware/auth";
 import authRoutes from "./routes/authRoutes";
+import categoryRoutes from "./routes/categoryRoutes";
 import noticeRoutes from "./routes/noticeRoutes";
 
 const app = express();
@@ -37,6 +38,7 @@ app.get("/", (_req, res) => {
 });
 
 app.use("/api/auth", authRoutes);
+app.use("/api/categories", categoryRoutes);
 app.use("/api/notices", noticeRoutes);
 
 const clientBuildPath = path.resolve(__dirname, "../../client/build");

@@ -1,12 +1,11 @@
 import React, { useMemo, useState } from 'react';
 
-const CATEGORY_OPTIONS = ['Academic', 'Placement', 'Events', 'General'];
 const URGENCY_OPTIONS = ['Low', 'Medium', 'High', 'Urgent'];
 
 const defaultFormState = {
   title: '',
   description: '',
-  category: 'Academic',
+  category: '',
   department: 'All',
   urgency: 'Medium',
   attachmentUrl: '',
@@ -20,6 +19,7 @@ const defaultFormState = {
 function AdminNoticeForm({
   onSubmitNotice,
   isSubmitting,
+  categoryOptions = [],
   initialValues = defaultFormState,
   submitLabel = 'Create Notice',
   title = 'Create a Notice',
@@ -30,12 +30,14 @@ function AdminNoticeForm({
     () => ({
       ...defaultFormState,
       ...initialValues,
+      category:
+        initialValues.category || categoryOptions[0] || defaultFormState.category,
       attachmentUrl: initialValues.attachmentUrl || '',
       attachmentFile: null,
       expiresAt: initialValues.expiresAt ? initialValues.expiresAt.slice(0, 16) : '',
       pinnedRank: String(initialValues.pinnedRank || defaultFormState.pinnedRank),
     }),
-    [initialValues]
+    [categoryOptions, initialValues]
   );
 
   const [formData, setFormData] = useState(computedInitialState);
@@ -72,6 +74,11 @@ function AdminNoticeForm({
       return;
     }
 
+    if (!formData.category) {
+      setFormError('Please choose a category.');
+      return;
+    }
+
     const payload = {
       title: formData.title.trim(),
       description: formData.description.trim(),
@@ -94,7 +101,10 @@ function AdminNoticeForm({
     }
 
     if (submitLabel === 'Create Notice') {
-      setFormData(defaultFormState);
+      setFormData({
+        ...defaultFormState,
+        category: categoryOptions[0] || '',
+      });
     }
   };
 
@@ -146,12 +156,17 @@ function AdminNoticeForm({
             name="category"
             value={formData.category}
             onChange={handleChange}
+            disabled={categoryOptions.length === 0}
           >
-            {CATEGORY_OPTIONS.map((category) => (
+            {categoryOptions.length === 0 ? (
+              <option value="">No categories available</option>
+            ) : (
+              categoryOptions.map((category) => (
               <option key={category} value={category}>
                 {category}
               </option>
-            ))}
+              ))
+            )}
           </select>
         </label>
 

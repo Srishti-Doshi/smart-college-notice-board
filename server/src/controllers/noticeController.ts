@@ -1,15 +1,14 @@
 import { type Request, type Response } from "express";
 import { type UpdateQuery } from "mongoose";
+import { Category } from "../models/Category";
 import { Notice } from "../models/Notice";
 import { uploadBufferToCloudinary } from "../services/cloudinaryUpload";
 import {
-  NOTICE_CATEGORIES,
   NOTICE_URGENCIES,
   type NoticePayload,
 } from "../types/notice";
 
-const isCategory = (value: string): value is (typeof NOTICE_CATEGORIES)[number] =>
-  NOTICE_CATEGORIES.includes(value as (typeof NOTICE_CATEGORIES)[number]);
+const escapeRegex = (value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
 const isUrgency = (value: string): value is (typeof NOTICE_URGENCIES)[number] =>
   NOTICE_URGENCIES.includes(value as (typeof NOTICE_URGENCIES)[number]);
@@ -79,10 +78,10 @@ const normalizePayload = (
   }
 
   if (!isPartial || body.category !== undefined) {
-    if (!body.category || !isCategory(body.category)) {
-      return { error: `Category must be one of: ${NOTICE_CATEGORIES.join(", ")}.` };
+    if (!body.category?.trim()) {
+      return { error: "Category is required." };
     }
-    normalizedData.category = body.category;
+    normalizedData.category = body.category.trim();
   }
 
   if (!isPartial || body.urgency !== undefined) {
@@ -138,6 +137,18 @@ const normalizePayload = (
   }
 
   return { value: normalizedData };
+};
+
+const validateCategory = async (category?: string) => {
+  if (!category) {
+    return false;
+  }
+
+  const existingCategory = await Category.findOne({
+    name: { $regex: `^${escapeRegex(category)}$`, $options: "i" },
+  });
+
+  return Boolean(existingCategory);
 };
 
 const enrichPayloadWithAttachment = (
@@ -203,7 +214,7 @@ const buildNoticeQuery = (
         $or: [{ expiresAt: { $exists: false } }, { expiresAt: { $gte: currentTime } }],
       };
 
-  if (category && isCategory(category)) {
+  if (category) {
     filters.category = category;
   }
 
@@ -294,6 +305,11 @@ export const createNotice = async (
       return res.status(400).json(parsed);
     }
 
+    const categoryIsValid = await validateCategory(parsed.value.category);
+    if (!categoryIsValid) {
+      return res.status(400).json({ error: "Choose a valid category." });
+    }
+
     const notice = await Notice.create(parsed.value);
     return res.status(201).json(notice);
   } catch (error) {
@@ -315,6 +331,13 @@ export const updateNotice = async (
 
     if ("error" in parsed) {
       return res.status(400).json(parsed);
+    }
+
+    if (parsed.value.category) {
+      const categoryIsValid = await validateCategory(String(parsed.value.category));
+      if (!categoryIsValid) {
+        return res.status(400).json({ error: "Choose a valid category." });
+      }
     }
 
     const updatedNotice = await Notice.findByIdAndUpdate(req.params.id, parsed.value, {

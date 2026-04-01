@@ -18,7 +18,7 @@ export type NoticeUrgency = (typeof NOTICE_URGENCIES)[number];
 export interface NoticePayload {
   title: string;
   description: string;
-  category: NoticeCategory;
+  category: string;
   department: string;
   urgency: NoticeUrgency;
   attachmentUrl?: string;

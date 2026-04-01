@@ -1,10 +1,10 @@
 import React from 'react';
 
-const CATEGORY_OPTIONS = ['All', 'Academic', 'Placement', 'Events', 'General'];
 const URGENCY_OPTIONS = ['All', 'Low', 'Medium', 'High', 'Urgent'];
 
 function FeedFilters({
   filters,
+  categories,
   departments,
   feedView,
   onFeedViewChange,
@@ -67,7 +67,7 @@ function FeedFilters({
             value={filters.category}
             onChange={onFilterChange}
           >
-            {CATEGORY_OPTIONS.map((category) => (
+            {['All', ...categories].map((category) => (
               <option key={category} value={category}>
                 {category}
               </option>

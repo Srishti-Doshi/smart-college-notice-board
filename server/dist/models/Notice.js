@@ -16,8 +16,8 @@ const noticeSchema = new mongoose_1.Schema({
     },
     category: {
         type: String,
-        enum: notice_1.NOTICE_CATEGORIES,
         required: true,
+        trim: true,
     },
     department: {
         type: String,

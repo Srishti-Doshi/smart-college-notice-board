@@ -19,7 +19,7 @@ export interface Notice {
   _id: string;
   title: string;
   description: string;
-  category: NoticeCategory;
+  category: string;
   department: string;
   urgency: NoticeUrgency;
   attachmentUrl?: string;

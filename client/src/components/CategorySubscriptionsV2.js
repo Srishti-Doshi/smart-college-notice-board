@@ -1,7 +1,5 @@
 import React, { useMemo, useState } from 'react';
 
-const CATEGORY_OPTIONS = ['Academic', 'Placement', 'Events', 'General'];
-
 const formatLastAlert = (lastAlertAt) => {
   if (!lastAlertAt) {
     return 'No alerts sent yet';
@@ -23,6 +21,7 @@ const actionLabelByStatus = {
 };
 
 function CategorySubscriptionsV2({
+  categories,
   subscribedCategories,
   notificationStatus,
   watchingCount,
@@ -126,7 +125,7 @@ function CategorySubscriptionsV2({
             </p>
 
             <div className="mt-4 flex flex-wrap gap-3">
-              {CATEGORY_OPTIONS.map((category) => {
+              {categories.map((category) => {
                 const isActive = subscribedCategories.includes(category);
 
                 return (

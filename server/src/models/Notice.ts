@@ -1,5 +1,5 @@
 import { Schema, model, type InferSchemaType } from "mongoose";
-import { NOTICE_CATEGORIES, NOTICE_URGENCIES } from "../types/notice";
+import { NOTICE_URGENCIES } from "../types/notice";
 
 const noticeSchema = new Schema(
   {
@@ -15,8 +15,8 @@ const noticeSchema = new Schema(
     },
     category: {
       type: String,
-      enum: NOTICE_CATEGORIES,
       required: true,
+      trim: true,
     },
     department: {
       type: String,
