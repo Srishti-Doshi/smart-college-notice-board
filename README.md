@@ -2,7 +2,7 @@
 
 SmartNotice is a full-stack college notice board system built to simplify campus communication between notice publishers and students. Authorized users can publish notices with categories, urgency levels, expiry dates, and attachments, while students can browse, filter, and receive browser-based alerts for the categories they follow.
 
-## Live Deployment
+## Live Deployment:  https://smart-college-notice-board-first.onrender.com/
 
 - Frontend: `https://smart-college-notice-board-first.onrender.com`
 - Backend API: `https://smart-college-notice-board-1.onrender.com`
