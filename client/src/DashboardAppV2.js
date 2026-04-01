@@ -440,6 +440,108 @@ function DashboardAppV2() {
     }
   };
 
+  const handleUpdateCategory = async (currentCategory, nextCategory) => {
+    if (!nextCategory) {
+      return { success: false, message: 'Category name is required.' };
+    }
+
+    setIsCategorySubmitting(true);
+
+    try {
+      const response = await axios.put(
+        `${API_BASE_URL}/api/categories/${encodeURIComponent(currentCategory)}`,
+        { newName: nextCategory }
+      );
+
+      const updatedCategoryName = response.data?.name || nextCategory;
+
+      setCategories((currentCategories) =>
+        currentCategories
+          .map((category) => (category === currentCategory ? updatedCategoryName : category))
+          .sort((first, second) => first.localeCompare(second))
+      );
+
+      setSubscribedCategories((currentCategories) =>
+        currentCategories.map((category) =>
+          category === currentCategory ? updatedCategoryName : category
+        )
+      );
+
+      setFilters((currentFilters) =>
+        currentFilters.category === currentCategory
+          ? { ...currentFilters, category: updatedCategoryName }
+          : currentFilters
+      );
+
+      if (editingNotice?.category === currentCategory) {
+        setEditingNotice((currentNotice) =>
+          currentNotice
+            ? {
+                ...currentNotice,
+                category: updatedCategoryName,
+              }
+            : currentNotice
+        );
+      }
+
+      setNotices((currentNotices) =>
+        currentNotices.map((notice) =>
+          notice.category === currentCategory
+            ? {
+                ...notice,
+                category: updatedCategoryName,
+              }
+            : notice
+        )
+      );
+
+      setSubmitMessage('Category updated successfully.');
+      return { success: true };
+    } catch (error) {
+      return {
+        success: false,
+        message: error.response?.data?.error || 'Could not update category.',
+      };
+    } finally {
+      setIsCategorySubmitting(false);
+    }
+  };
+
+  const handleDeleteCategory = async (categoryName) => {
+    setIsCategorySubmitting(true);
+
+    try {
+      await axios.delete(`${API_BASE_URL}/api/categories/${encodeURIComponent(categoryName)}`);
+
+      setCategories((currentCategories) =>
+        currentCategories.filter((category) => category !== categoryName)
+      );
+      setSubscribedCategories((currentCategories) =>
+        currentCategories.filter((category) => category !== categoryName)
+      );
+      setFilters((currentFilters) =>
+        currentFilters.category === categoryName
+          ? { ...currentFilters, category: 'All' }
+          : currentFilters
+      );
+
+      if (editingNotice?.category === categoryName) {
+        setEditingNotice(null);
+        setIsNoticeFormOpen(false);
+      }
+
+      setSubmitMessage('Category deleted successfully.');
+      return { success: true };
+    } catch (error) {
+      return {
+        success: false,
+        message: error.response?.data?.error || 'Could not delete category.',
+      };
+    } finally {
+      setIsCategorySubmitting(false);
+    }
+  };
+
   const handleUpdateNotice = async (payload) => {
     if (!editingNotice) {
       return { success: false, message: 'No notice selected for editing.' };
@@ -824,7 +926,10 @@ function DashboardAppV2() {
         {canManageNotices && mode === 'admin' && (
           <section className="mb-6 grid gap-4 lg:grid-cols-[1.2fr_0.8fr]">
             <AdminCategoryForm
+              categories={categories}
               onCreateCategory={handleCreateCategory}
+              onUpdateCategory={handleUpdateCategory}
+              onDeleteCategory={handleDeleteCategory}
               isSubmitting={isCategorySubmitting}
             />
             <section className="flex items-center justify-between rounded-2xl border border-slate-200 bg-white/90 px-5 py-4 shadow-sm">

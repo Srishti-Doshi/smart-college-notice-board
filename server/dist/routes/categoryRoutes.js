@@ -6,4 +6,6 @@ const auth_1 = require("../middleware/auth");
 const router = (0, express_1.Router)();
 router.get("/", categoryController_1.getCategories);
 router.post("/", (0, auth_1.requireRole)("admin"), categoryController_1.createCategory);
+router.put("/:categoryName", (0, auth_1.requireRole)("admin"), categoryController_1.updateCategory);
+router.delete("/:categoryName", (0, auth_1.requireRole)("admin"), categoryController_1.deleteCategory);
 exports.default = router;

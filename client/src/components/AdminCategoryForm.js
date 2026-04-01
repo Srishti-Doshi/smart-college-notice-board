@@ -1,8 +1,16 @@
 import React, { useState } from 'react';
 
-function AdminCategoryForm({ onCreateCategory, isSubmitting }) {
+function AdminCategoryForm({
+  categories,
+  onCreateCategory,
+  onUpdateCategory,
+  onDeleteCategory,
+  isSubmitting,
+}) {
   const [categoryName, setCategoryName] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
+  const [editingCategory, setEditingCategory] = useState('');
+  const [editingName, setEditingName] = useState('');
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -22,6 +30,41 @@ function AdminCategoryForm({ onCreateCategory, isSubmitting }) {
     }
 
     setCategoryName('');
+  };
+
+  const handleStartEdit = (category) => {
+    setErrorMessage('');
+    setEditingCategory(category);
+    setEditingName(category);
+  };
+
+  const handleSaveEdit = async (category) => {
+    setErrorMessage('');
+
+    const result = await onUpdateCategory(category, editingName.trim());
+
+    if (!result.success) {
+      setErrorMessage(result.message);
+      return;
+    }
+
+    setEditingCategory('');
+    setEditingName('');
+  };
+
+  const handleDelete = async (category) => {
+    setErrorMessage('');
+    const confirmed = window.confirm(`Delete category "${category}"?`);
+
+    if (!confirmed) {
+      return;
+    }
+
+    const result = await onDeleteCategory(category);
+
+    if (!result.success) {
+      setErrorMessage(result.message);
+    }
   };
 
   return (
@@ -55,6 +98,73 @@ function AdminCategoryForm({ onCreateCategory, isSubmitting }) {
           {errorMessage}
         </p>
       )}
+
+      <div className="mt-5 border-t border-slate-200 pt-4">
+        <p className="text-sm font-semibold text-slate-900">Manage Categories</p>
+        <div className="mt-3 space-y-2">
+          {categories.length === 0 ? (
+            <p className="text-sm text-slate-500">No categories available yet.</p>
+          ) : (
+            categories.map((category) => (
+              <div
+                key={category}
+                className="flex flex-col gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3 py-3 md:flex-row md:items-center"
+              >
+                {editingCategory === category ? (
+                  <>
+                    <input
+                      className="min-w-0 flex-1 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+                      value={editingName}
+                      onChange={(event) => setEditingName(event.target.value)}
+                    />
+                    <div className="flex gap-2">
+                      <button
+                        type="button"
+                        className="rounded-lg bg-slate-950 px-3 py-2 text-xs font-semibold text-white transition hover:bg-slate-800 disabled:opacity-60"
+                        onClick={() => handleSaveEdit(category)}
+                        disabled={isSubmitting}
+                      >
+                        Save
+                      </button>
+                      <button
+                        type="button"
+                        className="rounded-lg border border-slate-300 px-3 py-2 text-xs font-semibold text-slate-700 transition hover:bg-slate-100"
+                        onClick={() => {
+                          setEditingCategory('');
+                          setEditingName('');
+                        }}
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <p className="min-w-0 flex-1 text-sm font-medium text-slate-800">{category}</p>
+                    <div className="flex gap-2">
+                      <button
+                        type="button"
+                        className="rounded-lg border border-slate-300 px-3 py-2 text-xs font-semibold text-slate-700 transition hover:bg-slate-100"
+                        onClick={() => handleStartEdit(category)}
+                      >
+                        Edit
+                      </button>
+                      <button
+                        type="button"
+                        className="rounded-lg border border-red-300 px-3 py-2 text-xs font-semibold text-red-700 transition hover:bg-red-50 disabled:opacity-60"
+                        onClick={() => handleDelete(category)}
+                        disabled={isSubmitting}
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  </>
+                )}
+              </div>
+            ))
+          )}
+        </div>
+      </div>
     </section>
   );
 }
