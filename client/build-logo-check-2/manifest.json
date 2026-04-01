@@ -1,0 +1,25 @@
+{
+  "short_name": "SmartNotice",
+  "name": "SmartNotice - Smart College Notice Board",
+  "icons": [
+    {
+      "src": "smartnotice-tab.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    },
+    {
+      "src": "logo192.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "logo512.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ],
+  "start_url": ".",
+  "display": "standalone",
+  "theme_color": "#020817",
+  "background_color": "#E2E8F0"
+}

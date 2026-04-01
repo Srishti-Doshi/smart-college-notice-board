@@ -828,13 +828,11 @@ function DashboardAppV2() {
       <nav className="relative border-b border-white/40 bg-slate-950 text-white shadow-[0_20px_60px_rgba(15,23,42,0.28)]">
         <div className="max-w-6xl mx-auto px-6 py-5 md:px-8 flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
           <div className="flex items-start gap-4">
-            <div className="flex shrink-0 items-center justify-center rounded-[22px] border border-white/12 bg-white/8 px-3 py-2 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] backdrop-blur-sm">
-              <img
-                src={`${process.env.PUBLIC_URL}/smartnotice-tab.svg`}
-                alt="SmartNotice logo"
-                className="h-12 w-12 rounded-2xl bg-white object-contain"
-              />
-            </div>
+            <img
+              src={`${process.env.PUBLIC_URL}/smartnotice-tab.svg`}
+              alt="SmartNotice logo"
+              className="h-12 w-12 shrink-0 object-contain"
+            />
             <div>
               <p className="text-[11px] uppercase tracking-[0.35em] text-blue-200/90">
                 Smart College Notice Board
