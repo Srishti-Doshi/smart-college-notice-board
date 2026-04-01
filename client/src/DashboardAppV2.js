@@ -828,22 +828,20 @@ function DashboardAppV2() {
       <nav className="relative border-b border-white/40 bg-slate-950 text-white shadow-[0_20px_60px_rgba(15,23,42,0.28)]">
         <div className="max-w-6xl mx-auto px-6 py-5 md:px-8 flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
           <div className="flex items-start gap-4">
-            <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-[22px] border border-white/12 bg-white/8 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] backdrop-blur-sm">
-              <div className="relative h-10 w-10 rounded-2xl border border-sky-300/65 bg-slate-900 shadow-[0_10px_24px_rgba(2,6,23,0.4)]">
-                <div className="absolute inset-x-2 top-2.5 h-1 rounded-full bg-slate-100" />
-                <div className="absolute left-2 right-4 top-5 h-1 rounded-full bg-slate-400" />
-                <div className="absolute left-2 right-6 top-7.5 h-1 rounded-full bg-slate-500" />
-                <div className="absolute -right-1.5 -top-1.5 flex h-4.5 w-4.5 items-center justify-center rounded-full bg-amber-400 ring-4 ring-slate-950">
-                  <div className="h-1.5 w-1.5 rounded-full bg-slate-950" />
-                </div>
-              </div>
+            <div className="flex shrink-0 items-center justify-center rounded-[22px] border border-white/12 bg-white/8 px-3 py-2 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] backdrop-blur-sm">
+              <img
+                src={`${process.env.PUBLIC_URL}/smartnotice-tab.svg`}
+                alt="SmartNotice logo"
+                className="h-12 w-12 rounded-2xl bg-white object-contain"
+              />
             </div>
             <div>
               <p className="text-[11px] uppercase tracking-[0.35em] text-blue-200/90">
                 Smart College Notice Board
               </p>
-              <h1 className="mt-2 text-3xl font-black tracking-tight text-white">
-                SmartNotice
+              <h1 className="mt-2 text-3xl font-black tracking-tight">
+                <span className="text-blue-400">Smart</span>
+                <span className="text-slate-200">Notice</span>
               </h1>
               <p className="mt-2 max-w-2xl text-sm text-slate-300">
                 A focused campus announcement hub with urgent priorities, searchable history, and

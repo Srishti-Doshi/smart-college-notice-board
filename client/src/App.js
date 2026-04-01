@@ -298,12 +298,22 @@ function App() {
   return (
     <div className="min-h-screen bg-slate-100">
       <nav className="bg-blue-900 p-4 shadow-md text-white">
-        <div className="max-w-6xl mx-auto flex justify-between items-center">
-          <div>
+        <div className="max-w-6xl mx-auto flex justify-between items-center gap-4">
+          <div className="flex items-center gap-3">
+            <img
+              src={`${process.env.PUBLIC_URL}/smartnotice-tab.svg`}
+              alt="SmartNotice logo"
+              className="h-12 w-12 rounded-2xl bg-white object-contain p-1"
+            />
+            <div>
             <p className="text-xs uppercase tracking-[0.3em] text-blue-200">
               Smart College Notice Board
             </p>
-            <h1 className="text-2xl font-bold">SmartNotice</h1>
+            <h1 className="text-2xl font-bold">
+              <span className="text-blue-300">Smart</span>
+              <span className="text-slate-100">Notice</span>
+            </h1>
+            </div>
           </div>
           <p className="text-sm text-blue-100">React + Express + MongoDB Atlas</p>
         </div>
