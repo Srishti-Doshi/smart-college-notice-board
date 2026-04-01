@@ -7,6 +7,7 @@ function AdminCategoryForm({
   onDeleteCategory,
   isSubmitting,
   mode = 'create',
+  isModal = false,
 }) {
   const [categoryName, setCategoryName] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
@@ -69,7 +70,13 @@ function AdminCategoryForm({
   };
 
   return (
-    <section className="rounded-[24px] border border-slate-200 bg-white/92 p-5 shadow-sm">
+    <section
+      className={`rounded-[24px] p-5 shadow-sm ${
+        isModal
+          ? 'border border-white/70 bg-white/82 backdrop-blur-2xl'
+          : 'border border-slate-200 bg-white/92'
+      }`}
+    >
       <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-slate-500">
         Category Admin
       </p>

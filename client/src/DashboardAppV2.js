@@ -103,6 +103,7 @@ function DashboardAppV2() {
   const [isCategorySubmitting, setIsCategorySubmitting] = useState(false);
   const [editingNotice, setEditingNotice] = useState(null);
   const [isNoticeFormOpen, setIsNoticeFormOpen] = useState(false);
+  const [isCategoryFormOpen, setIsCategoryFormOpen] = useState(false);
   const [adminActionMode, setAdminActionMode] = useState('');
   const [selectedNotice, setSelectedNotice] = useState(null);
   const [mode, setMode] = useState('student');
@@ -234,6 +235,7 @@ function DashboardAppV2() {
   useEffect(() => {
     if (mode !== 'admin') {
       setIsNoticeFormOpen(false);
+      setIsCategoryFormOpen(false);
       setEditingNotice(null);
       setAdminActionMode('');
     }
@@ -705,14 +707,30 @@ function DashboardAppV2() {
 
   const handleOpenCreateNotice = () => {
     setEditingNotice(null);
+    setIsCategoryFormOpen(false);
     setAdminActionMode('notice');
     setIsNoticeFormOpen(true);
   };
 
   const handleOpenEditNotice = (notice) => {
     setEditingNotice(notice);
+    setIsCategoryFormOpen(false);
     setAdminActionMode('notice');
     setIsNoticeFormOpen(true);
+  };
+
+  const handleOpenCreateCategory = () => {
+    setIsNoticeFormOpen(false);
+    setEditingNotice(null);
+    setAdminActionMode('create-category');
+    setIsCategoryFormOpen(true);
+  };
+
+  const handleOpenEditCategory = () => {
+    setIsNoticeFormOpen(false);
+    setEditingNotice(null);
+    setAdminActionMode('edit-category');
+    setIsCategoryFormOpen(true);
   };
 
   const scrollToRef = (sectionRef) => {
@@ -809,15 +827,29 @@ function DashboardAppV2() {
 
       <nav className="relative border-b border-white/40 bg-slate-950 text-white shadow-[0_20px_60px_rgba(15,23,42,0.28)]">
         <div className="max-w-6xl mx-auto px-6 py-5 md:px-8 flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
-          <div>
-            <p className="text-[11px] uppercase tracking-[0.35em] text-blue-200/90">
-              Smart College Notice Board
-            </p>
-            <h1 className="mt-2 text-3xl font-black tracking-tight text-white">SmartNotice</h1>
-            <p className="mt-2 max-w-2xl text-sm text-slate-300">
-              A focused campus announcement hub with urgent priorities, searchable history, and
-              category-based alerting.
-            </p>
+          <div className="flex items-start gap-4">
+            <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-[22px] border border-white/12 bg-white/8 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] backdrop-blur-sm">
+              <div className="relative h-10 w-10 rounded-2xl border border-sky-300/65 bg-slate-900 shadow-[0_10px_24px_rgba(2,6,23,0.4)]">
+                <div className="absolute inset-x-2 top-2.5 h-1 rounded-full bg-slate-100" />
+                <div className="absolute left-2 right-4 top-5 h-1 rounded-full bg-slate-400" />
+                <div className="absolute left-2 right-6 top-7.5 h-1 rounded-full bg-slate-500" />
+                <div className="absolute -right-1.5 -top-1.5 flex h-4.5 w-4.5 items-center justify-center rounded-full bg-amber-400 ring-4 ring-slate-950">
+                  <div className="h-1.5 w-1.5 rounded-full bg-slate-950" />
+                </div>
+              </div>
+            </div>
+            <div>
+              <p className="text-[11px] uppercase tracking-[0.35em] text-blue-200/90">
+                Smart College Notice Board
+              </p>
+              <h1 className="mt-2 text-3xl font-black tracking-tight text-white">
+                SmartNotice
+              </h1>
+              <p className="mt-2 max-w-2xl text-sm text-slate-300">
+                A focused campus announcement hub with urgent priorities, searchable history, and
+                category-based alerting.
+              </p>
+            </div>
           </div>
           <div className="glass-panel rounded-3xl px-4 py-3 text-sm text-slate-100">
             {currentUser ? (
@@ -931,12 +963,12 @@ function DashboardAppV2() {
             <section className="rounded-[24px] border border-slate-200 bg-white/92 p-5 shadow-sm">
               <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
                 <div>
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-slate-500">
-                  Admin Actions
+                  <p className="text-[11px] font-bold uppercase tracking-[0.34em] text-blue-700">
+                    Workspace
                   </p>
-                  <p className="mt-1 text-sm text-slate-600">
-                    Choose one tool and work in place without wasting space.
-                  </p>
+                  <h3 className="mt-2 text-2xl font-black tracking-tight text-slate-900">
+                    Admin Actions
+                  </h3>
                 </div>
                 <div className="flex flex-wrap gap-2.5">
                   <button
@@ -947,9 +979,7 @@ function DashboardAppV2() {
                         : 'border border-slate-300 bg-white text-slate-700 hover:bg-slate-50'
                     }`}
                     onClick={() => {
-                      setIsNoticeFormOpen(false);
-                      setEditingNotice(null);
-                      setAdminActionMode('create-category');
+                      handleOpenCreateCategory();
                     }}
                   >
                     Add Category
@@ -962,9 +992,7 @@ function DashboardAppV2() {
                         : 'border border-slate-300 bg-white text-slate-700 hover:bg-slate-50'
                     }`}
                     onClick={() => {
-                      setIsNoticeFormOpen(false);
-                      setEditingNotice(null);
-                      setAdminActionMode('edit-category');
+                      handleOpenEditCategory();
                     }}
                   >
                     Edit Category
@@ -984,17 +1012,6 @@ function DashboardAppV2() {
                 </div>
               </div>
             </section>
-
-            {(adminActionMode === 'create-category' || adminActionMode === 'edit-category') && (
-              <AdminCategoryForm
-                categories={categories}
-                mode={adminActionMode === 'create-category' ? 'create' : 'edit'}
-                onCreateCategory={handleCreateCategory}
-                onUpdateCategory={handleUpdateCategory}
-                onDeleteCategory={handleDeleteCategory}
-                isSubmitting={isCategorySubmitting}
-              />
-            )}
           </section>
         )}
 
@@ -1112,216 +1129,6 @@ function DashboardAppV2() {
         )}
       </main>
 
-      <footer className="relative mt-12 overflow-hidden border-t border-white/20 bg-slate-950 text-white">
-        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,_rgba(56,189,248,0.18),_transparent_32%),radial-gradient(circle_at_bottom_right,_rgba(245,158,11,0.18),_transparent_28%)]" />
-        <div className="relative max-w-6xl mx-auto px-6 py-10 md:px-8">
-          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-            <section className="rounded-[24px] border border-white/10 bg-white/5 p-5 backdrop-blur-sm">
-              <div className="flex items-center justify-between">
-                <p className="text-[11px] uppercase tracking-[0.3em] text-blue-200/85">Feed</p>
-                <span className="rounded-full border border-white/10 bg-white/5 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-200">
-                  {notices.length} visible
-                </span>
-              </div>
-              <div className="mt-4 grid gap-2">
-                <button
-                  type="button"
-                  className="footer-nav-button"
-                  onClick={() => {
-                    setMode('student');
-                    setFeedView('active');
-                    scrollToRef(feedSectionRef);
-                  }}
-                >
-                  <span>Latest Notices</span>
-                  <span>{feedView === 'active' ? 'Open' : 'Go'}</span>
-                </button>
-                <button
-                  type="button"
-                  className="footer-nav-button"
-                  onClick={() => {
-                    setMode('student');
-                    setFeedView('archive');
-                    scrollToRef(feedSectionRef);
-                  }}
-                >
-                  <span>Past Notices</span>
-                  <span>{feedView === 'archive' ? 'Open' : 'Go'}</span>
-                </button>
-                <button
-                  type="button"
-                  className="footer-nav-button"
-                  onClick={() => {
-                    setFilters(defaultFilters);
-                    scrollToRef(feedSectionRef);
-                  }}
-                >
-                  <span>Reset Filters</span>
-                  <span>Clear</span>
-                </button>
-              </div>
-            </section>
-
-            <section className="rounded-[24px] border border-white/10 bg-white/5 p-5 backdrop-blur-sm">
-              <div className="flex items-center justify-between">
-                <p className="text-[11px] uppercase tracking-[0.3em] text-blue-200/85">Priority</p>
-                <span className="rounded-full border border-white/10 bg-white/5 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-200">
-                  {pinnedNotices.length} pinned
-                </span>
-              </div>
-              <div className="mt-4 grid gap-2">
-                <button
-                  type="button"
-                  className="footer-nav-button"
-                  onClick={() => {
-                    if (pinnedNotices.length > 0) {
-                      setMode('student');
-                      setFeedView('active');
-                      scrollToRef(pinnedSectionRef);
-                      return;
-                    }
-                    scrollToRef(feedSectionRef);
-                  }}
-                >
-                  <span>Priority Deck</span>
-                  <span>{pinnedNotices.length > 0 ? pinnedNotices.length : 'None'}</span>
-                </button>
-                <button
-                  type="button"
-                  className="footer-nav-button"
-                  onClick={() => {
-                    setMode('student');
-                    setFeedView('active');
-                    setFilters((currentFilters) => ({ ...currentFilters, urgency: 'Urgent' }));
-                    scrollToRef(feedSectionRef);
-                  }}
-                >
-                  <span>Urgent Notices</span>
-                  <span>Filter</span>
-                </button>
-                <button
-                  type="button"
-                  className="footer-nav-button"
-                  onClick={() => setMode('student')}
-                >
-                  <span>Student View</span>
-                  <span>{mode === 'student' ? 'Active' : 'Switch'}</span>
-                </button>
-              </div>
-            </section>
-
-            <section className="rounded-[24px] border border-white/10 bg-white/5 p-5 backdrop-blur-sm">
-              <div className="flex items-center justify-between">
-                <p className="text-[11px] uppercase tracking-[0.3em] text-blue-200/85">
-                  {canManageNotices ? 'Admin' : 'Alerts'}
-                </p>
-                <span className="rounded-full border border-white/10 bg-white/5 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-200">
-                  {canManageNotices ? categories.length : notificationStatus}
-                </span>
-              </div>
-              <div className="mt-4 grid gap-2">
-                <button
-                  type="button"
-                  className="footer-nav-button"
-                  onClick={() => {
-                    if (canManageNotices) {
-                      setMode('admin');
-                      return;
-                    }
-                    setMode('student');
-                    setFeedView('active');
-                    scrollToRef(subscriptionsRef);
-                  }}
-                >
-                  <span>{canManageNotices ? 'Admin Workspace' : 'Alert Preferences'}</span>
-                  <span>{canManageNotices ? mode : subscribedCategories.length}</span>
-                </button>
-                <button
-                  type="button"
-                  className="footer-nav-button"
-                  onClick={() => {
-                    if (canManageNotices) {
-                      setMode('admin');
-                      handleOpenCreateNotice();
-                      return;
-                    }
-                    handleTestNotification();
-                  }}
-                >
-                  <span>{canManageNotices ? 'Create Notice' : 'Test Alert'}</span>
-                  <span>{canManageNotices ? 'Open' : 'Send'}</span>
-                </button>
-                <button
-                  type="button"
-                  className="footer-nav-button"
-                  onClick={() => {
-                    if (canManageNotices) {
-                      setMode('admin');
-                      return;
-                    }
-
-                    setMode('student');
-                    setFeedView('active');
-                    scrollToRef(feedSectionRef);
-                  }}
-                >
-                  <span>{canManageNotices ? 'Manage Categories' : 'Browse Feed'}</span>
-                  <span>{canManageNotices ? categories.length : categories.length}</span>
-                </button>
-              </div>
-            </section>
-
-            <section className="rounded-[24px] border border-white/10 bg-white/5 p-5 backdrop-blur-sm">
-              <div className="flex items-center justify-between">
-                <p className="text-[11px] uppercase tracking-[0.3em] text-blue-200/85">Session</p>
-                <span className="rounded-full border border-white/10 bg-white/5 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-200">
-                  {currentUser ? currentUser.role : 'guest'}
-                </span>
-              </div>
-              <div className="mt-4 grid gap-2">
-                <button
-                  type="button"
-                  className="footer-nav-button"
-                  onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-                >
-                  <span>Back To Top</span>
-                  <span>Up</span>
-                </button>
-                <button
-                  type="button"
-                  className="footer-nav-button"
-                  onClick={() => {
-                    if (currentUser) {
-                      handleLogout();
-                      return;
-                    }
-
-                    setShowLogin(true);
-                    setAuthError('');
-                  }}
-                >
-                  <span>{currentUser ? 'Logout' : 'Login'}</span>
-                  <span>{currentUser ? currentUser.name : 'Access'}</span>
-                </button>
-                <button
-                  type="button"
-                  className="footer-nav-button"
-                  onClick={() => {
-                    setMode('student');
-                    setFeedView('active');
-                    setFilters(defaultFilters);
-                    scrollToRef(feedSectionRef);
-                  }}
-                >
-                  <span>Home State</span>
-                  <span>Reset</span>
-                </button>
-              </div>
-            </section>
-          </div>
-        </div>
-      </footer>
-
       <NoticeDetailsModal notice={selectedNotice} onClose={() => setSelectedNotice(null)} />
 
       {submitMessage && (
@@ -1419,6 +1226,7 @@ function DashboardAppV2() {
                 className="rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
                 onClick={() => {
                   setIsNoticeFormOpen(false);
+                  setIsCategoryFormOpen(false);
                   setEditingNotice(null);
                   setAdminActionMode('');
                 }}
@@ -1443,6 +1251,37 @@ function DashboardAppV2() {
           </div>
         </div>
       )}
+
+      {canManageNotices &&
+        mode === 'admin' &&
+        isCategoryFormOpen &&
+        (adminActionMode === 'create-category' || adminActionMode === 'edit-category') && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/45 p-4 md:p-6">
+            <div className="w-full max-w-4xl max-h-[92vh] overflow-y-auto rounded-[30px]">
+              <div className="mb-3 flex justify-end">
+                <button
+                  type="button"
+                  className="rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+                  onClick={() => {
+                    setIsCategoryFormOpen(false);
+                    setAdminActionMode('');
+                  }}
+                >
+                  Close
+                </button>
+              </div>
+              <AdminCategoryForm
+                categories={categories}
+                mode={adminActionMode === 'create-category' ? 'create' : 'edit'}
+                onCreateCategory={handleCreateCategory}
+                onUpdateCategory={handleUpdateCategory}
+                onDeleteCategory={handleDeleteCategory}
+                isSubmitting={isCategorySubmitting}
+                isModal
+              />
+            </div>
+          </div>
+        )}
     </div>
   );
 }
