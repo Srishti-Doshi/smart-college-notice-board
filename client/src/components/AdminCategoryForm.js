@@ -69,30 +69,37 @@ function AdminCategoryForm({
   };
 
   return (
-    <section className="rounded-2xl border border-slate-200 bg-white/90 px-5 py-4 shadow-sm">
-      <p className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-500">
+    <section className="rounded-[24px] border border-slate-200 bg-white/92 p-5 shadow-sm">
+      <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-slate-500">
         Category Admin
       </p>
-      <h3 className="mt-2 text-lg font-bold text-slate-900">
+      <div className="mt-2 flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
+        <div>
+          <h3 className="text-xl font-black text-slate-900">
         {mode === 'create' ? 'Add Category' : 'Edit Categories'}
-      </h3>
-      <p className="mt-1 text-sm text-slate-600">
+          </h3>
+          <p className="mt-1 text-sm text-slate-600">
         {mode === 'create'
           ? 'Create a new category for notices, filters, and subscriptions.'
           : 'Rename or delete categories from one place.'}
-      </p>
+          </p>
+        </div>
+        <span className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
+          {categories.length} categories
+        </span>
+      </div>
 
       {mode === 'create' && (
-        <form className="mt-4 flex flex-col gap-3 md:flex-row" onSubmit={handleSubmit}>
+        <form className="mt-4 flex flex-col gap-2 sm:flex-row" onSubmit={handleSubmit}>
           <input
-            className="min-w-0 flex-1 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+            className="min-w-0 flex-1 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
             placeholder="Example: Scholarships"
             value={categoryName}
             onChange={(event) => setCategoryName(event.target.value)}
           />
           <button
             type="submit"
-            className="rounded-xl bg-slate-950 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-400"
+            className="rounded-xl bg-slate-950 px-4 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-400 sm:min-w-[150px]"
             disabled={isSubmitting}
           >
             {isSubmitting ? 'Adding...' : 'Add Category'}
@@ -108,27 +115,26 @@ function AdminCategoryForm({
 
       {mode === 'edit' && (
         <div className="mt-5 border-t border-slate-200 pt-4">
-          <p className="text-sm font-semibold text-slate-900">Manage Categories</p>
-        <div className="mt-3 space-y-2">
+          <div className="mt-3 space-y-2.5">
           {categories.length === 0 ? (
             <p className="text-sm text-slate-500">No categories available yet.</p>
           ) : (
             categories.map((category) => (
               <div
                 key={category}
-                className="flex flex-col gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3 py-3 md:flex-row md:items-center"
+                className="flex flex-col gap-3 rounded-2xl border border-slate-200 bg-slate-50/85 px-4 py-3 md:flex-row md:items-center"
               >
                 {editingCategory === category ? (
                   <>
                     <input
-                      className="min-w-0 flex-1 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+                      className="min-w-0 flex-1 rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
                       value={editingName}
                       onChange={(event) => setEditingName(event.target.value)}
                     />
-                    <div className="flex gap-2">
+                    <div className="flex gap-2 self-end md:self-auto">
                       <button
                         type="button"
-                        className="rounded-lg bg-slate-950 px-3 py-2 text-xs font-semibold text-white transition hover:bg-slate-800 disabled:opacity-60"
+                        className="rounded-xl bg-slate-950 px-3 py-2 text-xs font-semibold text-white transition hover:bg-slate-800 disabled:opacity-60"
                         onClick={() => handleSaveEdit(category)}
                         disabled={isSubmitting}
                       >
@@ -136,7 +142,7 @@ function AdminCategoryForm({
                       </button>
                       <button
                         type="button"
-                        className="rounded-lg border border-slate-300 px-3 py-2 text-xs font-semibold text-slate-700 transition hover:bg-slate-100"
+                        className="rounded-xl border border-slate-300 bg-white px-3 py-2 text-xs font-semibold text-slate-700 transition hover:bg-slate-100"
                         onClick={() => {
                           setEditingCategory('');
                           setEditingName('');
@@ -148,18 +154,20 @@ function AdminCategoryForm({
                   </>
                 ) : (
                   <>
-                    <p className="min-w-0 flex-1 text-sm font-medium text-slate-800">{category}</p>
-                    <div className="flex gap-2">
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-sm font-semibold text-slate-800">{category}</p>
+                    </div>
+                    <div className="flex gap-2 self-end md:self-auto">
                       <button
                         type="button"
-                        className="rounded-lg border border-slate-300 px-3 py-2 text-xs font-semibold text-slate-700 transition hover:bg-slate-100"
+                        className="rounded-xl border border-slate-300 bg-white px-3 py-2 text-xs font-semibold text-slate-700 transition hover:bg-slate-100"
                         onClick={() => handleStartEdit(category)}
                       >
                         Edit
                       </button>
                       <button
                         type="button"
-                        className="rounded-lg border border-red-300 px-3 py-2 text-xs font-semibold text-red-700 transition hover:bg-red-50 disabled:opacity-60"
+                        className="rounded-xl border border-red-200 bg-white px-3 py-2 text-xs font-semibold text-red-600 transition hover:bg-red-50 disabled:opacity-60"
                         onClick={() => handleDelete(category)}
                         disabled={isSubmitting}
                       >

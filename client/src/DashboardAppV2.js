@@ -928,58 +928,60 @@ function DashboardAppV2() {
 
         {canManageNotices && mode === 'admin' && (
           <section className="mb-6 grid gap-4">
-            <section className="rounded-2xl border border-slate-200 bg-white/90 px-5 py-4 shadow-sm">
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-500">
+            <section className="rounded-[24px] border border-slate-200 bg-white/92 p-5 shadow-sm">
+              <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+                <div>
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-slate-500">
                   Admin Actions
-                </p>
-                <p className="mt-1 text-sm text-slate-600">
-                  Choose what you want to work on: add a category, edit categories, or add a notice.
-                </p>
-              </div>
-              <div className="mt-4 flex flex-wrap gap-3">
-                <button
-                  type="button"
-                  className={`rounded-xl px-4 py-2.5 text-sm font-semibold transition ${
-                    adminActionMode === 'create-category'
-                      ? 'bg-slate-950 text-white'
-                      : 'border border-slate-300 bg-white text-slate-700 hover:bg-slate-50'
-                  }`}
-                  onClick={() => {
-                    setIsNoticeFormOpen(false);
-                    setEditingNotice(null);
-                    setAdminActionMode('create-category');
-                  }}
-                >
-                  Add Category
-                </button>
-                <button
-                  type="button"
-                  className={`rounded-xl px-4 py-2.5 text-sm font-semibold transition ${
-                    adminActionMode === 'edit-category'
-                      ? 'bg-slate-950 text-white'
-                      : 'border border-slate-300 bg-white text-slate-700 hover:bg-slate-50'
-                  }`}
-                  onClick={() => {
-                    setIsNoticeFormOpen(false);
-                    setEditingNotice(null);
-                    setAdminActionMode('edit-category');
-                  }}
-                >
-                  Edit Category
-                </button>
-                <button
-                  type="button"
-                  className={`rounded-xl px-4 py-2.5 text-sm font-semibold transition ${
-                    adminActionMode === 'notice'
-                      ? 'bg-slate-950 text-white'
-                      : 'border border-slate-300 bg-white text-slate-700 hover:bg-slate-50'
-                  }`}
-                  onClick={handleOpenCreateNotice}
-                  disabled={categories.length === 0}
-                >
-                  Add Notice
-                </button>
+                  </p>
+                  <p className="mt-1 text-sm text-slate-600">
+                    Choose one tool and work in place without wasting space.
+                  </p>
+                </div>
+                <div className="flex flex-wrap gap-2.5">
+                  <button
+                    type="button"
+                    className={`rounded-full px-4 py-2 text-sm font-semibold transition ${
+                      adminActionMode === 'create-category'
+                        ? 'bg-slate-950 text-white shadow-sm'
+                        : 'border border-slate-300 bg-white text-slate-700 hover:bg-slate-50'
+                    }`}
+                    onClick={() => {
+                      setIsNoticeFormOpen(false);
+                      setEditingNotice(null);
+                      setAdminActionMode('create-category');
+                    }}
+                  >
+                    Add Category
+                  </button>
+                  <button
+                    type="button"
+                    className={`rounded-full px-4 py-2 text-sm font-semibold transition ${
+                      adminActionMode === 'edit-category'
+                        ? 'bg-slate-950 text-white shadow-sm'
+                        : 'border border-slate-300 bg-white text-slate-700 hover:bg-slate-50'
+                    }`}
+                    onClick={() => {
+                      setIsNoticeFormOpen(false);
+                      setEditingNotice(null);
+                      setAdminActionMode('edit-category');
+                    }}
+                  >
+                    Edit Category
+                  </button>
+                  <button
+                    type="button"
+                    className={`rounded-full px-4 py-2 text-sm font-semibold transition ${
+                      adminActionMode === 'notice'
+                        ? 'bg-slate-950 text-white shadow-sm'
+                        : 'border border-slate-300 bg-white text-slate-700 hover:bg-slate-50'
+                    }`}
+                    onClick={handleOpenCreateNotice}
+                    disabled={categories.length === 0}
+                  >
+                    Add Notice
+                  </button>
+                </div>
               </div>
             </section>
 
